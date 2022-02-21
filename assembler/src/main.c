@@ -191,6 +191,8 @@ void sias_generate_bytecode(sias_parse_result tokens, char* file_name) {
         if (tok.type == SIAS_TOKEN_INSTRUCTION) {
             if (strcmp(tok.string_value, "syscall") == 0) {
                 bytecode[bytecode_length++] = 0x00;
+            } else if (strcmp(tok.string_value, "ui32_add") == 0) {
+                bytecode[bytecode_length++] = 0x0c;
             } else if (strcmp(tok.string_value, "push") == 0) {
                 bytecode[bytecode_length++] = 0x03;
 

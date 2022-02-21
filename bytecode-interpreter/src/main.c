@@ -78,6 +78,12 @@ void sivm_op_push() {
     sivm_stack_push(num);
 }
 
+void sivm_op_ui32_add() {
+    u32 a = sivm_stack_pop();
+    u32 b = sivm_stack_pop();
+    sivm_stack_push(a + b);
+}
+
 void sivm_init() {
     sivm_stack = malloc(sizeof(u32) * SIVM_STACK_CAPACITY);
     sivm_memory = malloc(sizeof(u8) * SIVM_MEMORY_CAPACITY);
@@ -122,6 +128,8 @@ _Noreturn void sivm_run_program() {
             sivm_op_syscall();
         else if (opcode == 0x03)
             sivm_op_push();
+        else if (opcode == 0x0C)
+            sivm_op_ui32_add();
         else
             printf("unknown opcode (0x%.2X)\n", opcode);
 

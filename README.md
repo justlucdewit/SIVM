@@ -20,7 +20,7 @@ sizeof memitem = 8
 |  0x09  | OP_RETURN             |      |
 |  0x0A  | OP_RESERVE \<bytes>   |      |
 |  0x0B  | OP_FREE \<bytes>      |      |
-|  0x0C  | OP_ADD_UI             |      |
+|  0x0C  | OP_ADD_UI             |  ✅   |
 |  0x0D  | OP_SUB_UI             |      |
 |  0x0E  | OP_MUL_UI             |      |
 |  0x0F  | OP_DIV_UI             |      |
