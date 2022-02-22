@@ -109,6 +109,38 @@ sias_parse_result sias_parse_source_code(string_buffer source_code) {
             }
         }
 
+        // Handle comments
+        if (current_character == ';') {
+            // Store the current token if needed
+            if (acc_count > 0) {
+                sias_token tok = { 0 };
+                tok.line_found = current_line;
+                tok.col_found = current_col;
+                char first_character = acc[0];
+
+                acc[acc_count] = '\0';
+
+                if (first_character >= '0' && first_character <= '9') {
+                    tok.type = SIAS_TOKEN_U_INTEGER;
+                    tok.uint32_value = strtoul(acc, NULL, 10);
+                } else {
+                    tok.type = SIAS_TOKEN_INSTRUCTION;
+                    tok.string_value = acc;
+                }
+
+                tokens[token_count++] = tok;
+                acc_count = 0;
+                acc = malloc(sizeof (char) * acc_capacity);
+            }
+
+            // Continue until new line or EOF
+            while(current_character != '\n' && reading_index < source_code.length) {
+                current_character = source_code.buffer[++reading_index];
+            }
+
+            continue;
+        }
+
         // Check if end of token
         if ((current_character == ' ' || current_character == '\n') && acc_count > 0) {
             sias_token tok = { 0 };

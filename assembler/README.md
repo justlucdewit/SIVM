@@ -24,7 +24,7 @@ number 204 onto the stack):
 ```asm
 push 4
 push 200
-ui_add
+ui32_add
 ```
 
 ### Syscalls
@@ -60,3 +60,11 @@ at that location in the bytecode as raw bytes, this is later accessed on line 1
 (since the string is at memory location 16, because each opcode is 1 byte, and each
 number is 4 bytes, this gets us 1 + 4 + 1 + 4 + 1 + 4 + 1 = 16), the 12 is because
 the length of the string is 12 characters
+
+# Future features:
+ - Comments
+ - Escape codes in string
+ - Macros
+ - Labels
+ - Includes
+ - Standard library

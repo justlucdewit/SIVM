@@ -54,6 +54,7 @@ u32 sivm_stack_pop() {
 void sivm_sys_write() {
     u32 string_length = sivm_stack_pop();
     u32 string_ptr = sivm_stack_pop();
+
     fwrite(((char *)sivm_memory) + string_ptr, sizeof(char), string_length, stdout);
 }
 
