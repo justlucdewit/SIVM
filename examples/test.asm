@@ -1,6 +1,6 @@
 ; Print hello world
-push 27
-push 12
+push hello_world
+push 13
 push 0
 syscall
 
@@ -10,4 +10,5 @@ push 1
 syscall
 
 ; Define strings
-	bytes "Hello World!"
+hello_world:
+	bytes "Hello World!\n"

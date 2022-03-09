@@ -19,9 +19,9 @@ To run a sivm executable, use the following command: `sivm path/to/executable`
 |  0x0A  | OP_RESERVE \<bytes>   |      |
 |  0x0B  | OP_FREE \<bytes>      |      |
 |  0x0C  | OP_UI_ADD             |  ✅   |
-|  0x0D  | OP_UI_SUB             |      |
-|  0x0E  | OP_UI_MUL             |      |
-|  0x0F  | OP_UI_DIV             |      |
+|  0x0D  | OP_UI_SUB             |  ✅   |
+|  0x0E  | OP_UI_MUL             |  ✅   |
+|  0x0F  | OP_UI_DIV             |  ✅   |
 |  0x10  | OP_I_MOD              |      |
 |  0x11  | OP_I_ADD              |      |
 |  0x12  | OP_I_SUB              |      |

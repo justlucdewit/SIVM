@@ -27,6 +27,18 @@ push 200
 ui32_add
 ```
 
+### Comments
+Comments can be placed in the code to make certain texts be ignored by the assembler
+This can be used for the documentation of the code or in case something needs to be
+make clear to developers.
+
+Comments are initiaded using the ; and end at the end of the line
+
+```asm
+; push 15
+push 15
+```
+
 ### Syscalls
 
 Syscalls are a way to ask the virtual machine to perform some action done by
@@ -48,18 +60,18 @@ syscall
 
 To print hello world to STDOUT:
 ```asm
-push 16
+push string
 push 12
 push 0
 syscall
-bytes "Hello World!"
+
+string:
+    bytes "Hello World!"
 ```
 
 The bytes keyword in this example takes a string and puts the bytes of the string
-at that location in the bytecode as raw bytes, this is later accessed on line 1
-(since the string is at memory location 16, because each opcode is 1 byte, and each
-number is 4 bytes, this gets us 1 + 4 + 1 + 4 + 1 + 4 + 1 = 16), the 12 is because
-the length of the string is 12 characters
+at that location in the bytecode as raw bytes, The label 'string' is used to mark
+the location of the string in the bytecode
 
 # Future features:
  - Comments

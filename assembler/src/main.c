@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "../../libraries/color.h"
+
 #define true 1
 #define false 0
 
@@ -10,10 +12,108 @@ typedef struct {
 	size_t length;
 } string_buffer;
 
+int sias_str_is_instruction(char* str) {
+    return
+        strcmp(str, "syscall") == 0 ||
+        strcmp(str, "dynamic_load") == 0 ||
+
+        strcmp(str, "push") == 0 ||
+        strcmp(str, "dup") == 0 ||
+        strcmp(str, "rand") == 0 ||
+        strcmp(str, "swap") == 0 ||
+        strcmp(str, "cycle") == 0 ||
+
+        strcmp(str, "cskip") == 0 ||
+        strcmp(str, "jump") == 0 ||
+        strcmp(str, "call") == 0 ||
+        strcmp(str, "return") == 0 ||
+
+        strcmp(str, "write8") == 0 ||
+        strcmp(str, "write16") == 0 ||
+        strcmp(str, "write32") == 0 ||
+        strcmp(str, "read8") == 0 ||
+        strcmp(str, "read16") == 0 ||
+        strcmp(str, "read32") == 0 ||
+
+        strcmp(str, "alloc") == 0 ||
+        strcmp(str, "free") == 0 ||
+        strcmp(str, "realloc") == 0 ||
+
+        strcmp(str, "ui32_add") == 0 ||
+        strcmp(str, "ui32_sub") == 0 ||
+        strcmp(str, "ui32_mul") == 0 ||
+        strcmp(str, "ui32_div") == 0 ||
+        strcmp(str, "ui32_pow") == 0 ||
+        strcmp(str, "ui32_sqrt") == 0 ||
+        strcmp(str, "ui32_mod") == 0 ||
+
+        strcmp(str, "ui16_add") == 0 ||
+        strcmp(str, "ui16_sub") == 0 ||
+        strcmp(str, "ui16_mul") == 0 ||
+        strcmp(str, "ui16_div") == 0 ||
+        strcmp(str, "ui16_pow") == 0 ||
+        strcmp(str, "ui16_sqrt") == 0 ||
+        strcmp(str, "ui16_mod") == 0 ||
+
+        strcmp(str, "ui8_add") == 0 ||
+        strcmp(str, "ui8_sub") == 0 ||
+        strcmp(str, "ui8_mul") == 0 ||
+        strcmp(str, "ui8_div") == 0 ||
+        strcmp(str, "ui8_pow") == 0 ||
+        strcmp(str, "ui8_sqrt") == 0 ||
+        strcmp(str, "ui8_mod") == 0 ||
+
+        strcmp(str, "i32_add") == 0 ||
+        strcmp(str, "i32_sub") == 0 ||
+        strcmp(str, "i32_mul") == 0 ||
+        strcmp(str, "i32_div") == 0 ||
+        strcmp(str, "i32_pow") == 0 ||
+        strcmp(str, "i32_sqrt") == 0 ||
+        strcmp(str, "i32_mod") == 0 ||
+
+        strcmp(str, "i16_add") == 0 ||
+        strcmp(str, "i16_sub") == 0 ||
+        strcmp(str, "i16_mul") == 0 ||
+        strcmp(str, "i16_div") == 0 ||
+        strcmp(str, "i16_pow") == 0 ||
+        strcmp(str, "i16_sqrt") == 0 ||
+        strcmp(str, "i16_mod") == 0 ||
+
+        strcmp(str, "i8_add") == 0 ||
+        strcmp(str, "i8_sub") == 0 ||
+        strcmp(str, "i8_mul") == 0 ||
+        strcmp(str, "i8_div") == 0 ||
+        strcmp(str, "i8_pow") == 0 ||
+        strcmp(str, "i8_sqrt") == 0 ||
+        strcmp(str, "i8_mod") == 0 ||
+
+        strcmp(str, "f32_add") == 0 ||
+        strcmp(str, "f32_sub") == 0 ||
+        strcmp(str, "f32_mul") == 0 ||
+        strcmp(str, "f32_div") == 0 ||
+        strcmp(str, "f32_pow") == 0 ||
+        strcmp(str, "f32_sqrt") == 0 ||
+
+        strcmp(str, "f16_add") == 0 ||
+        strcmp(str, "f16_sub") == 0 ||
+        strcmp(str, "f16_mul") == 0 ||
+        strcmp(str, "f16_div") == 0 ||
+        strcmp(str, "f16_pow") == 0 ||
+        strcmp(str, "f16_sqrt") == 0 ||
+
+        strcmp(str, "f8_add") == 0 ||
+        strcmp(str, "f8_sub") == 0 ||
+        strcmp(str, "f8_mul") == 0 ||
+        strcmp(str, "f8_div") == 0 ||
+        strcmp(str, "f8_pow") == 0 ||
+        strcmp(str, "f8_sqrt") == 0 ||
+        
+        strcmp(str, "bytes") == 0;
+}
+
 char* replace(const char *in, const char *pattern, const char *by) {
     size_t outsize = strlen(in) + 1;
 
-    // TODO maybe avoid reallocing by counting the non-overlapping occurences of pattern
     char *res = malloc(outsize);
 
     // use this to iterate over the output
@@ -99,15 +199,14 @@ typedef struct {
 } sias_parse_result;
 
 sias_parse_result sias_parse_source_code(string_buffer source_code) {
-    // Initialize memory to store tokens
-    size_t token_count = 0;
+    // Initialize dynamic memory
     size_t token_capacity = 100;
-    sias_token* tokens = malloc((sizeof (sias_token)) * token_capacity);
+    size_t token_length = 0;
+    sias_token* tokens = malloc(sizeof(sias_token) * token_capacity);
 
-    // Set up token memory
-    size_t acc_count = 0;
     size_t acc_capacity = 100;
-    char* acc = malloc(sizeof (char) * acc_capacity);
+    size_t acc_length = 0;
+    char* acc = malloc(sizeof(char) * acc_capacity);
 
     // Storage for line number and column
     size_t current_line = 1;
@@ -120,6 +219,7 @@ sias_parse_result sias_parse_source_code(string_buffer source_code) {
         // Get the current character in the source code
         char current_character = source_code.buffer[reading_index];
 
+        // Handle keeping track of current line and column
         ++current_col;
         if (current_character == '\n') {
             ++current_line;
@@ -132,20 +232,29 @@ sias_parse_result sias_parse_source_code(string_buffer source_code) {
             continue;
         } else if (string_mode) {
             if (current_character == '"') {
-                sias_token tok = { 0 };
-                tok.line_found = current_line;
-                tok.col_found = current_col;
-                acc[acc_count] = '\0';
-                tok.type = SIAS_TOKEN_STRING;
-                char* replaced_acc = replace(acc, "\\n", "\n");
-                tok.string_value = replaced_acc;
-                tokens[token_count++] = tok;
-                acc_count = 0;
-                acc = malloc(sizeof (char) * acc_capacity);
+                
+                // Add \0 to acc
+                acc[acc_length++] = '\0';
+
+                // Create token
+                sias_token tok = {
+                    .line_found = current_line,
+                    .col_found = current_col,
+                    .type = SIAS_TOKEN_STRING,
+                    .string_value = replace(acc, "\\n", "\n")
+                };
+
+                tokens[token_length++] = tok;
+                
+                acc = malloc(sizeof(char) * 100);
+                acc_capacity = 100;
+                acc_length = 0;
+                
                 string_mode = false;
+                
                 continue;
             } else {
-                acc[acc_count++] = current_character;
+                acc[acc_length++] = current_character;
                 continue;
             }
         }
@@ -153,13 +262,15 @@ sias_parse_result sias_parse_source_code(string_buffer source_code) {
         // Handle comments
         if (current_character == ';') {
             // Store the current token if needed
-            if (acc_count > 0) {
-                sias_token tok = { 0 };
-                tok.line_found = current_line;
-                tok.col_found = current_col;
-                char first_character = acc[0];
+            if (acc_length > 0) {
+                sias_token tok = {
+                    .line_found = current_line,
+                    .col_found = current_col
+                };
 
-                acc[acc_count] = '\0';
+                acc[acc_length++] = '\0';
+
+                char first_character = acc[0];
 
                 if (first_character >= '0' && first_character <= '9') {
                     tok.type = SIAS_TOKEN_U_INTEGER;
@@ -169,9 +280,11 @@ sias_parse_result sias_parse_source_code(string_buffer source_code) {
                     tok.string_value = acc;
                 }
 
-                tokens[token_count++] = tok;
-                acc_count = 0;
-                acc = malloc(sizeof (char) * acc_capacity);
+                tokens[token_length++] = tok;
+                
+                acc = malloc(sizeof(char) * 100);
+                acc_capacity = 100;
+                acc_length = 0;
             }
 
             // Continue until new line or EOF
@@ -183,25 +296,33 @@ sias_parse_result sias_parse_source_code(string_buffer source_code) {
         }
 
         // Check if end of token
-        if ((current_character == ' ' || current_character == '\n' || current_character == '\t') && acc_count > 0) {
-            sias_token tok = { 0 };
-            tok.line_found = current_line;
-            tok.col_found = current_col;
-            char first_character = acc[0];
+        if ((current_character == ' ' || current_character == '\n' || current_character == '\t') && acc_length > 0) {
+            sias_token tok = {
+                .line_found = current_line,
+                .col_found = current_col
+            };
 
-            acc[acc_count] = '\0';
+            acc[acc_length++] = '\0';
+
+            char first_character = acc[0];
 
             if (first_character >= '0' && first_character <= '9') {
                 tok.type = SIAS_TOKEN_U_INTEGER;
                 tok.uint32_value = strtoul(acc, NULL, 10);
             } else {
-                tok.type = SIAS_TOKEN_INSTRUCTION;
+                if (sias_str_is_instruction(acc))
+                    tok.type = SIAS_TOKEN_INSTRUCTION;
+                else
+                    tok.type = SIAS_TOKEN_MARKER;
                 tok.string_value = acc;
             }
 
-            tokens[token_count++] = tok;
-            acc_count = 0;
-            acc = malloc(sizeof (char) * acc_capacity);
+            tokens[token_length++] = tok;
+                
+            acc = malloc(sizeof(char) * 100);
+            acc_capacity = 100;
+            acc_length = 0;
+
             continue;
         }
 
@@ -209,68 +330,97 @@ sias_parse_result sias_parse_source_code(string_buffer source_code) {
             continue;
 
         // Store the character
-        acc[acc_count++] = current_character;
+        acc[acc_length++] = current_character;
     }
+
+    
 
     // Check if there is a token left in the temp buffer
-    if (acc_count > 0) {
-        sias_token tok = { 0 };
-        tok.type = SIAS_TOKEN_INSTRUCTION;
-        acc[acc_count] = '\0';
-        tok.string_value = acc;
-        tokens[token_count++] = tok;
+    if (acc_length > 0) {
+        sias_token tok = {
+            .line_found = current_line,
+            .col_found = current_col
+        };
+
+        acc[acc_length++] = '\0';
+
+        char first_character = acc[0];
+
+        if (first_character >= '0' && first_character <= '9') {
+            tok.type = SIAS_TOKEN_U_INTEGER;
+            tok.uint32_value = strtoul(acc, NULL, 10);
+        } else {
+            if (sias_str_is_instruction(acc))
+                tok.type = SIAS_TOKEN_INSTRUCTION;
+            else
+                tok.type = SIAS_TOKEN_MARKER;
+            tok.string_value = acc;
+        }
+
+        tokens[token_length++] = tok;
     }
 
-    // Print how many tokens got parsed
-//    printf("Tokens parsed: %ld\n\n", token_count);
-//
-//    for (int i = 0; i < token_count; i++) {
-//        sias_token tok = tokens[i];
-//
-//        printf("Token %d\n", i);
-//
-//        if (tok.type == SIAS_TOKEN_INSTRUCTION) {
-//            puts(" - TYPE: Instruction");
-//            printf(" - VALUE: %s", tok.string_value);
-//        } else if (tok.type == SIAS_TOKEN_U_INTEGER) {
-//            puts(" - TYPE: Unsigned integer");
-//            printf(" - VALUE: %d", tok.uint32_value);
-//        } else if (tok.type == SIAS_TOKEN_STRING) {
-//            puts(" - TYPE: String");
-//            printf(" - VALUE: \"%s\"", tok.string_value);
-//        } else {
-//            puts(" - TYPE: Unkown");
-//            puts(" - VALUE: Unknown");
-//        }
-//
-//        puts("\n");
-//    }
+   // Print how many tokens got parsed
+   // printf("Tokens parsed: %ld\n\n", token_count);
+
+    // for (int i = 0; i < token_length; i++) {
+    //     sias_token tok = tokens[i];
+
+    //     printf("Token %d\n", i);
+
+    //     if (tok.type == SIAS_TOKEN_INSTRUCTION) {
+    //         puts(" - TYPE: Instruction");
+    //         printf(" - VALUE: %s", tok.string_value);
+    //     } else if (tok.type == SIAS_TOKEN_MARKER) {
+    //         puts(" - TYPE: Marker");
+    //         printf(" - VALUE: \"%s\"", tok.string_value);
+    //     } else if (tok.type == SIAS_TOKEN_U_INTEGER) {
+    //         puts(" - TYPE: Unsigned integer");
+    //         printf(" - VALUE: %d", tok.uint32_value);
+    //     } else if (tok.type == SIAS_TOKEN_STRING) {
+    //         puts(" - TYPE: String");
+    //         printf(" - VALUE: \"%s\"", tok.string_value);
+    //     } else { 
+    //         puts(" - TYPE: Unkown");
+    //         puts(" - VALUE: Unknown");
+    //     }
+
+    //     puts("\n");
+    // }
 
     // Create and return the parse result
-    sias_parse_result parse_result = { 0 };
-    parse_result.token_count = token_count;
-    parse_result.tokens = tokens;
-    return parse_result;
+    sias_parse_result result = {
+        .tokens = tokens,
+        .token_count = token_length
+    };
+
+    return result;
 }
 
-void sias_generate_bytecode(sias_parse_result tokens, char* file_name) {
+void sias_generate_bytecode(sias_parse_result parse_result, char* file_name) {
     size_t bytecode_length = 0;
     size_t bytecode_capacity = 200;
     char* bytecode = malloc((sizeof (char)) * bytecode_capacity);
 
-    for (int i = 0; i < tokens.token_count; i++) {
-        sias_token tok = tokens.tokens[i];
+    sias_token* tokens = parse_result.tokens;
+    size_t tokens_count = parse_result.token_count;
+
+    for (int i = 0; i < tokens_count; i++) {
+        sias_token tok = tokens[i];
 
         if (tok.type == SIAS_TOKEN_INSTRUCTION) {
+            // Miscelaneous
             if (strcmp(tok.string_value, "syscall") == 0) {
                 bytecode[bytecode_length++] = 0x00;
-            } else if (strcmp(tok.string_value, "ui32_add") == 0) {
-                bytecode[bytecode_length++] = 0x0c;
+            } else if (strcmp(tok.string_value, "dynamic_load") == 0) {
+                bytecode[bytecode_length++] = 0x01;
+            
+            // Stack
             } else if (strcmp(tok.string_value, "push") == 0) {
-                bytecode[bytecode_length++] = 0x03;
+                bytecode[bytecode_length++] = 0x10;
 
                 // Handle arguments
-                tok = tokens.tokens[++i];
+                tok = tokens[++i];
 
                 if (tok.type != SIAS_TOKEN_U_INTEGER) {
                     printf("[ERROR] Expected integer value after 'push' operation at %s:%ld:%ld\n", file_name, tok.line_found, tok.col_found);
@@ -279,12 +429,207 @@ void sias_generate_bytecode(sias_parse_result tokens, char* file_name) {
 
                 u_int32_t arg1 = tok.uint32_value;
 
-                bytecode[bytecode_length++] = (char) arg1 >> 24;
-                bytecode[bytecode_length++] = (char) arg1 >> 16;
-                bytecode[bytecode_length++] = (char) arg1 >> 8;
+                bytecode[bytecode_length++] = (char) ((arg1 >> 24) & 0xff);
+                bytecode[bytecode_length++] = (char) ((arg1 >> 16) & 0xff);
+                bytecode[bytecode_length++] = (char) ((arg1 >> 8) & 0xff);
                 bytecode[bytecode_length++] = (char) arg1;
+            } else if (strcmp(tok.string_value, "dup") == 0) {
+                bytecode[bytecode_length++] = 0x11;
+            } else if (strcmp(tok.string_value, "rand") == 0) {
+                bytecode[bytecode_length++] = 0x12;
+            } else if (strcmp(tok.string_value, "swap") == 0) {
+                bytecode[bytecode_length++] = 0x13;
+            } else if (strcmp(tok.string_value, "cycle") == 0) {
+                bytecode[bytecode_length++] = 0x14;
+
+            // Controll flow
+            } else if (strcmp(tok.string_value, "cskip") == 0) {
+                bytecode[bytecode_length++] = 0x20;
+            } else if (strcmp(tok.string_value, "jump") == 0) {
+                bytecode[bytecode_length++] = 0x21;
+
+                // Handle arguments
+                tok = tokens[++i];
+
+                if (tok.type != SIAS_TOKEN_U_INTEGER) {
+                    printf("[ERROR] Expected integer value after 'push' operation at %s:%ld:%ld\n", file_name, tok.line_found, tok.col_found);
+                    exit(1);
+                }
+
+                u_int32_t arg1 = tok.uint32_value;
+
+                bytecode[bytecode_length++] = (char) ((arg1 >> 24) & 0xff);
+                bytecode[bytecode_length++] = (char) ((arg1 >> 16) & 0xff);
+                bytecode[bytecode_length++] = (char) ((arg1 >> 8) & 0xff);
+                bytecode[bytecode_length++] = (char) arg1;
+            } else if (strcmp(tok.string_value, "call") == 0) {
+                bytecode[bytecode_length++] = 0x22;
+            } else if (strcmp(tok.string_value, "return") == 0) {
+                bytecode[bytecode_length++] = 0x23;
+
+            // Heap memory read/write
+            } else if (strcmp(tok.string_value, "write8") == 0) {
+                bytecode[bytecode_length++] = 0x30;
+            } else if (strcmp(tok.string_value, "write16") == 0) {
+                bytecode[bytecode_length++] = 0x31;
+            } else if (strcmp(tok.string_value, "write32") == 0) {
+                bytecode[bytecode_length++] = 0x32;
+            } else if (strcmp(tok.string_value, "read8") == 0) {
+                bytecode[bytecode_length++] = 0x33;
+            } else if (strcmp(tok.string_value, "read16") == 0) {
+                bytecode[bytecode_length++] = 0x34;
+            } else if (strcmp(tok.string_value, "read32") == 0) {
+                bytecode[bytecode_length++] = 0x35;
+
+            // Heap memory management
+            } else if (strcmp(tok.string_value, "alloc") == 0) {
+                bytecode[bytecode_length++] = 0x40;
+            } else if (strcmp(tok.string_value, "free") == 0) {
+                bytecode[bytecode_length++] = 0x41;
+            } else if (strcmp(tok.string_value, "realloc") == 0) {
+                bytecode[bytecode_length++] = 0x42;
+
+            // ui32 math
+            } else if (strcmp(tok.string_value, "ui32_add") == 0) {
+                bytecode[bytecode_length++] = 0x50;
+            } else if (strcmp(tok.string_value, "ui32_sub") == 0) {
+                bytecode[bytecode_length++] = 0x51;
+            } else if (strcmp(tok.string_value, "ui32_mul") == 0) {
+                bytecode[bytecode_length++] = 0x52;
+            } else if (strcmp(tok.string_value, "ui32_div") == 0) {
+                bytecode[bytecode_length++] = 0x53;
+            } else if (strcmp(tok.string_value, "ui32_pow") == 0) {
+                bytecode[bytecode_length++] = 0x54;
+            } else if (strcmp(tok.string_value, "ui32_sqrt") == 0) {
+                bytecode[bytecode_length++] = 0x55;
+            } else if (strcmp(tok.string_value, "ui32_mod") == 0) {
+                bytecode[bytecode_length++] = 0x56;
+
+            // ui16 math
+            } else if (strcmp(tok.string_value, "ui16_add") == 0) {
+                bytecode[bytecode_length++] = 0x60;
+            } else if (strcmp(tok.string_value, "ui16_sub") == 0) {
+                bytecode[bytecode_length++] = 0x61;
+            } else if (strcmp(tok.string_value, "ui16_mul") == 0) {
+                bytecode[bytecode_length++] = 0x62;
+            } else if (strcmp(tok.string_value, "ui16_div") == 0) {
+                bytecode[bytecode_length++] = 0x63;
+            } else if (strcmp(tok.string_value, "ui16_pow") == 0) {
+                bytecode[bytecode_length++] = 0x64;
+            } else if (strcmp(tok.string_value, "ui16_sqrt") == 0) {
+                bytecode[bytecode_length++] = 0x65;
+            } else if (strcmp(tok.string_value, "ui16_mod") == 0) {
+                bytecode[bytecode_length++] = 0x66;
+
+            // ui8 math
+            } else if (strcmp(tok.string_value, "ui8_add") == 0) {
+                bytecode[bytecode_length++] = 0x70;
+            } else if (strcmp(tok.string_value, "ui8_sub") == 0) {
+                bytecode[bytecode_length++] = 0x71;
+            } else if (strcmp(tok.string_value, "ui8_mul") == 0) {
+                bytecode[bytecode_length++] = 0x72;
+            } else if (strcmp(tok.string_value, "ui8_div") == 0) {
+                bytecode[bytecode_length++] = 0x73;
+            } else if (strcmp(tok.string_value, "ui8_pow") == 0) {
+                bytecode[bytecode_length++] = 0x74;
+            } else if (strcmp(tok.string_value, "ui8_sqrt") == 0) {
+                bytecode[bytecode_length++] = 0x75;
+            } else if (strcmp(tok.string_value, "ui8_mod") == 0) {
+                bytecode[bytecode_length++] = 0x76;
+
+            // i32 math
+            } else if (strcmp(tok.string_value, "i32_add") == 0) {
+                bytecode[bytecode_length++] = 0x80;
+            } else if (strcmp(tok.string_value, "i32_sub") == 0) {
+                bytecode[bytecode_length++] = 0x81;
+            } else if (strcmp(tok.string_value, "i32_mul") == 0) {
+                bytecode[bytecode_length++] = 0x82;
+            } else if (strcmp(tok.string_value, "i32_div") == 0) {
+                bytecode[bytecode_length++] = 0x83;
+            } else if (strcmp(tok.string_value, "i32_pow") == 0) {
+                bytecode[bytecode_length++] = 0x84;
+            } else if (strcmp(tok.string_value, "i32_sqrt") == 0) {
+                bytecode[bytecode_length++] = 0x85;
+            } else if (strcmp(tok.string_value, "i32_mod") == 0) {
+                bytecode[bytecode_length++] = 0x86;
+
+            // i16 math
+            } else if (strcmp(tok.string_value, "i16_add") == 0) {
+                bytecode[bytecode_length++] = 0x90;
+            } else if (strcmp(tok.string_value, "i16_sub") == 0) {
+                bytecode[bytecode_length++] = 0x91;
+            } else if (strcmp(tok.string_value, "i16_mul") == 0) {
+                bytecode[bytecode_length++] = 0x92;
+            } else if (strcmp(tok.string_value, "i16_div") == 0) {
+                bytecode[bytecode_length++] = 0x93;
+            } else if (strcmp(tok.string_value, "i16_pow") == 0) {
+                bytecode[bytecode_length++] = 0x94;
+            } else if (strcmp(tok.string_value, "i16_sqrt") == 0) {
+                bytecode[bytecode_length++] = 0x95;
+            } else if (strcmp(tok.string_value, "i16_mod") == 0) {
+                bytecode[bytecode_length++] = 0x96;
+
+            // i8 math
+            } else if (strcmp(tok.string_value, "i8_add") == 0) {
+                bytecode[bytecode_length++] = 0xA0;
+            } else if (strcmp(tok.string_value, "i8_sub") == 0) {
+                bytecode[bytecode_length++] = 0xA1;
+            } else if (strcmp(tok.string_value, "i8_mul") == 0) {
+                bytecode[bytecode_length++] = 0xA2;
+            } else if (strcmp(tok.string_value, "i8_div") == 0) {
+                bytecode[bytecode_length++] = 0xA3;
+            } else if (strcmp(tok.string_value, "i8_pow") == 0) {
+                bytecode[bytecode_length++] = 0xA4;
+            } else if (strcmp(tok.string_value, "i8_sqrt") == 0) {
+                bytecode[bytecode_length++] = 0xA5;
+            } else if (strcmp(tok.string_value, "i8_mod") == 0) {
+                bytecode[bytecode_length++] = 0xA6;
+
+            // f32 math
+            } else if (strcmp(tok.string_value, "f32_add") == 0) {
+                bytecode[bytecode_length++] = 0xB0;
+            } else if (strcmp(tok.string_value, "f32_sub") == 0) {
+                bytecode[bytecode_length++] = 0xB1;
+            } else if (strcmp(tok.string_value, "f32_mul") == 0) {
+                bytecode[bytecode_length++] = 0xB2;
+            } else if (strcmp(tok.string_value, "f32_div") == 0) {
+                bytecode[bytecode_length++] = 0xB3;
+            } else if (strcmp(tok.string_value, "f32_pow") == 0) {
+                bytecode[bytecode_length++] = 0xB4;
+            } else if (strcmp(tok.string_value, "f32_sqrt") == 0) {
+                bytecode[bytecode_length++] = 0xB5;
+
+            // f16 math
+            } else if (strcmp(tok.string_value, "f16_add") == 0) {
+                bytecode[bytecode_length++] = 0xC0;
+            } else if (strcmp(tok.string_value, "f16_sub") == 0) {
+                bytecode[bytecode_length++] = 0xC1;
+            } else if (strcmp(tok.string_value, "f16_mul") == 0) {
+                bytecode[bytecode_length++] = 0xC2;
+            } else if (strcmp(tok.string_value, "f16_div") == 0) {
+                bytecode[bytecode_length++] = 0xC3;
+            } else if (strcmp(tok.string_value, "f16_pow") == 0) {
+                bytecode[bytecode_length++] = 0xC4;
+            } else if (strcmp(tok.string_value, "f16_sqrt") == 0) {
+                bytecode[bytecode_length++] = 0xC5;
+
+            // f8 math
+            } else if (strcmp(tok.string_value, "f8_add") == 0) {
+                bytecode[bytecode_length++] = 0xD0;
+            } else if (strcmp(tok.string_value, "f8_sub") == 0) {
+                bytecode[bytecode_length++] = 0xD1;
+            } else if (strcmp(tok.string_value, "f8_mul") == 0) {
+                bytecode[bytecode_length++] = 0xD2;
+            } else if (strcmp(tok.string_value, "f8_div") == 0) {
+                bytecode[bytecode_length++] = 0xD3;
+            } else if (strcmp(tok.string_value, "f8_pow") == 0) {
+                bytecode[bytecode_length++] = 0xD4;
+            } else if (strcmp(tok.string_value, "f8_sqrt") == 0) {
+                bytecode[bytecode_length++] = 0xD5;
+            
+            
             } else if (strcmp(tok.string_value, "bytes") == 0) {
-                tok = tokens.tokens[++i];
+                tok = tokens[++i];
                 char* arg1 = tok.string_value;
 
                 size_t i = 0;
@@ -307,29 +652,39 @@ typedef struct {
     size_t byte_index;
 } marker_position;
 
-void sias_post_processor(sias_parse_result* tokens) {
+void sias_post_processor(sias_parse_result parse_result) {
     // Loop over tokens to gather marker locations
     size_t current_byte_index = 0;
     size_t marker_count = 0;
     size_t marker_capacity = 100;
     marker_position* markers = malloc(sizeof(marker_position) * marker_capacity);
 
-    for (size_t i = 0; i < tokens->token_count; i++) {
-        sias_token* tok = &(tokens->tokens[i]);
+    sias_token* tokens = parse_result.tokens;
+    size_t tokens_count = parse_result.token_count;
 
-        if (tok->type == SIAS_TOKEN_INSTRUCTION && tok->string_value[strlen(tok->string_value) - 1] == ':') {
-            tok->type = SIAS_TOKEN_MARKER;
-            marker_position new_maker = { 0 };
-            tok->string_value[strlen(tok->string_value) - 1] = '\0';
-            new_maker.marker_name = tok->string_value;
-            new_maker.byte_index = current_byte_index;
-            markers[marker_count++] = new_maker;
-        } else if (tok->type == SIAS_TOKEN_STRING) {
-            current_byte_index += strlen(tok->string_value);
-        } else if (tok->type == SIAS_TOKEN_U_INTEGER) {
-            current_byte_index += 4;
-        } else if (tok->type == SIAS_TOKEN_INSTRUCTION && strcmp(tok->string_value, "bytes") != 0) {
+    for (size_t i = 0; i < tokens_count; i++) {
+        sias_token tok = tokens[i];
+        
+        if (tok.type == SIAS_TOKEN_INSTRUCTION && strcmp(tok.string_value, "bytes") != 0) {
             current_byte_index += 1;
+        } else if (tok.type == SIAS_TOKEN_STRING) {
+            current_byte_index += strlen(tok.string_value);
+        } else if (tok.type == SIAS_TOKEN_U_INTEGER) {
+            current_byte_index += 4;
+        } else if (tok.type == SIAS_TOKEN_MARKER) {
+            if (tok.string_value[strlen(tok.string_value) - 1] == ':') {
+                tok.type = SIAS_TOKEN_MARKER;
+                tok.string_value[strlen(tok.string_value) - 1] = '\0';
+
+                marker_position new_maker = {
+                    .marker_name = tok.string_value,
+                    .byte_index = current_byte_index
+                };
+
+                markers[marker_count++] = new_maker;
+            } else {
+                current_byte_index += 4;
+            }
         }
     }
 
@@ -340,17 +695,16 @@ void sias_post_processor(sias_parse_result* tokens) {
     // }
 
     // Loop over tokens to replace markers
-    size_t byte_offset = 3;
-    for (size_t i = 0; i < tokens->token_count; i++) {
-        sias_token* tok = &(tokens->tokens[i]);
+    for (size_t i = 0; i < tokens_count; i++) {
+        sias_token* tok = tokens + i;
 
-        if (tok->type == SIAS_TOKEN_INSTRUCTION) {
+        if (tok->type == SIAS_TOKEN_MARKER && tok->string_value[strlen(tok->string_value) - 1] != ':') {
 
             // Try to find marker
             marker_position* found_mark = NULL;
             for (size_t i = 0; i < marker_count; i++) {
                 marker_position* mark = &markers[i];
-                
+
                 if (strcmp(tok->string_value, mark->marker_name) == 0) {
                     found_mark = mark;
                     break;
@@ -359,8 +713,7 @@ void sias_post_processor(sias_parse_result* tokens) {
 
             if (found_mark != NULL) {
                 tok->type = SIAS_TOKEN_U_INTEGER;
-                tok->uint32_value = found_mark->byte_index + byte_offset;
-                byte_offset += 3;
+                tok->uint32_value = found_mark->byte_index;
             }
         }
     }
@@ -379,17 +732,44 @@ void sias_assembler(char argc, char* argv[]) {
     // Post processor
     // - figures out label location
     // - label replacement
-    sias_post_processor(&tokens);
+    sias_post_processor(tokens);
 
     // Generate the output
     sias_generate_bytecode(tokens, file_name);
 }
 
 int main(int argc, char* argv[]) {
-	if (argc <= 1)
-		puts("Simple assembler, assembler for the Simple Virtual Machine\nDeveloped by Luke_");
-	else
+	if (argc <= 1) {
+		puts("Simple assembler, assembler for the Simple Virtual Machine\nDeveloped by Luke_\n");
+
+        // printf(COLOR_WHITE COLOR_BG_GREEN COLOR_BOLD " SI ");
+        // printf(COLOR_GREEN COLOR_BG_WHITE COLOR_BOLD " AS \n");
+
+
+        char logo[] =
+            "##########          \n"
+            "#   ##   # ### ###  \n"
+            "# ##### ## # # #    \n"
+            "#   ### ## ### ###  \n"
+            "### ### ## # #   #  \n"
+            "#   ##   # # # ###  \n"
+            "##########          \n";
+
+        for (int i = 0; i < sizeof(logo); i++) {
+            char logo_char = logo[i];
+
+            if (logo_char == '#') {
+                printf(COLOR_GREEN COLOR_BG_GREEN "  ");
+            } else if (logo_char == ' ') {
+                printf(COLOR_WHITE COLOR_BG_WHITE "  ");
+            } else {
+                printf(COLOR_NORMAL "%c", logo_char);
+            }
+        }
+        puts(COLOR_NORMAL "");
+    } else {
 		sias_assembler(argc, argv);
+    }
 
 	return 0;
 }

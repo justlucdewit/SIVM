@@ -3,6 +3,8 @@
 #include <string.h>
 #include <sys/types.h>
 
+#include "../../libraries/color.h"
+
 #define SIVM_STACK_CAPACITY 255
 #define SIVM_MEMORY_CAPACITY 255
 
@@ -18,10 +20,10 @@ u8 sivm_debug = 0;
 u8* sivm_memory;
 
 char* sivm_instr_names[] = {
-        "OP_SYSCALL",
-        "OP_JUMP",
-        "OP_CSKIP",
-        "OP_PUSH"
+    "OP_SYSCALL",
+    "OP_JUMP",
+    "OP_CSKIP",
+    "OP_PUSH"
 };
 
 u8 sivm_fetch8() {
@@ -74,6 +76,11 @@ void sivm_op_syscall() {
         printf("unknown syscall (0x%.2X)\n", syscall_type);
 }
 
+void sivm_op_jump() {
+    u32 num = sivm_fetch32();
+    program_counter = num - 1;
+}
+
 void sivm_op_push() {
     u32 num = sivm_fetch32();
     sivm_stack_push(num);
@@ -83,6 +90,24 @@ void sivm_op_ui32_add() {
     u32 a = sivm_stack_pop();
     u32 b = sivm_stack_pop();
     sivm_stack_push(a + b);
+}
+
+void sivm_op_ui32_sub() {
+    u32 a = sivm_stack_pop();
+    u32 b = sivm_stack_pop();
+    sivm_stack_push(a - b);
+}
+
+void sivm_op_ui32_mul() {
+    u32 a = sivm_stack_pop();
+    u32 b = sivm_stack_pop();
+    sivm_stack_push(a * b);
+}
+
+void sivm_op_ui32_div() {
+    u32 a = sivm_stack_pop();
+    u32 b = sivm_stack_pop();
+    sivm_stack_push(a / b);
 }
 
 void sivm_init() {
@@ -127,10 +152,18 @@ _Noreturn void sivm_run_program() {
 
         if (opcode == 0x00)
             sivm_op_syscall();
+        else if (opcode == 0x01)
+            sivm_op_jump();
         else if (opcode == 0x03)
             sivm_op_push();
         else if (opcode == 0x0C)
             sivm_op_ui32_add();
+        else if (opcode == 0x0D)
+            sivm_op_ui32_sub();
+        else if (opcode == 0x0E)
+            sivm_op_ui32_mul();
+        else if (opcode == 0x0F)
+            sivm_op_ui32_div();
         else
             printf("unknown opcode (0x%.2X)\n", opcode);
 
@@ -139,9 +172,33 @@ _Noreturn void sivm_run_program() {
 }
 
 int main(int argc, char* argv[]) {
-    if (argc <= 1)
-        puts("Simple assembler, assembler for the Simple Virtual Machine\nDeveloped by Luke_");
-    else {
+    if (argc <= 1) {
+        puts("Simple Virtual machine\nDeveloped by Luke_\n");
+        char logo[] =
+            "##########           \n"
+            "#   ##   # # # ## ## \n"
+            "# ##### ## # # ## ## \n"
+            "#   ### ## # # # # # \n"
+            "### ### ##  #  #   # \n"
+            "#   ##   #  #  #   # \n"
+            "##########           \n";
+
+        for (int i = 0; i < sizeof(logo); i++) {
+            char logo_char = logo[i];
+
+            if (logo_char == '#') {
+                printf(COLOR_BLUE COLOR_BG_BLUE "  ");
+            } else if (logo_char == ' ') {
+                printf(COLOR_WHITE COLOR_BG_WHITE "  ");
+            } else {
+                printf(COLOR_NORMAL "%c", logo_char);
+            }
+        }
+
+        printf(COLOR_RED COLOR_BG_RED "");
+        puts("");
+
+    } else {
         char* file_name = argv[1];
         sivm_init();
         sivm_load_program(file_name);
