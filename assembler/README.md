@@ -74,9 +74,7 @@ at that location in the bytecode as raw bytes, The label 'string' is used to mar
 the location of the string in the bytecode
 
 # Future features:
- - Comments
  - Escape codes in string
  - Macros
- - Labels
  - Includes
  - Standard library
