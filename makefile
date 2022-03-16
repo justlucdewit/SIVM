@@ -7,7 +7,7 @@ all: sivm sias sida
 
 sivm:
 	rm -f builds/sivm
-	$(cc) $(bi_sources) -o builds/sivm
+	$(cc) $(bi_sources) -o builds/sivmsivm_op_alloc
 
 sias:
 	rm -f builds/sias
