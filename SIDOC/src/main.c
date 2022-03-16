@@ -1,5 +1,8 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
+
+#include "../../libraries/color.h"
 
 #define MAX_MATCH_DISTANCE 100
 #define MAX_MATCH_COUNT 5
@@ -525,28 +528,25 @@ int matchesMade = 0;
 levenshtein_match best_matches[MAX_MATCH_COUNT];
 
 void considerMatch(char* matchName, int lev_distance) {
+	levenshtein_match newLevDist = {
+		.word = matchName,
+		.distance = lev_distance
+	};
+
     // Just add it if it fits
-    if (matchesMade < MAX_MATCH_COUNT) {
-        levenshtein_match newLevDist = {
-            .word = matchName,
-            .distance = lev_distance
-        };
-        
+    if (matchesMade < MAX_MATCH_COUNT)
         best_matches[matchesMade++] = newLevDist;
-    }
+
     
     // Only add it if its a better one
-    else if (0) {
-        levenshtein_match newLevDist = {
-            .word = matchName,
-            .distance = lev_distance
-        };
-
+    else {
         for (int i = 0; i < SIDOC_min(matchesMade, MAX_MATCH_COUNT); i++) {
             levenshtein_match currentLevDist = best_matches[i];
 
-            if (currentLevDist.distance > newLevDist.distance)
+            if (currentLevDist.distance > newLevDist.distance) {
                 best_matches[i] = newLevDist;
+				return;
+			}
         }
     }
 }
@@ -575,14 +575,31 @@ int levenshtein_distance(char *s1, char *s2) {
     return(matrix[s2len][s1len]);
 }
 
+char* SIDOC_get_chosen_match() {
+	int chosenIndex = 0;
+
+	printf("\n> ");
+	scanf("%d", &chosenIndex);
+
+	if (chosenIndex > matchesMade || chosenIndex < 0) {
+		puts("index given is not valid, aborting");
+		exit(-1);
+	}
+
+	puts("");
+	return best_matches[chosenIndex - 1].word;
+}
+
 char* SIDOC_get_doc(char* docName) {
     
     // Try to find an exact documentation math
     for (int i = 0; i < sizeof(docs) / sizeof(SIDOC_Documentation); i++) {
         SIDOC_Documentation currDoc = docs[i];
         
-        if (strcmp(currDoc.documentation_name, docName) == 0)
+        if (strcmp(currDoc.documentation_name, docName) == 0) {
+			printf("----- %s -----\n", docName);
             return currDoc.documentation_content;
+		}
     }
     
     for (int i = 0; i < sizeof(docs) / sizeof(SIDOC_Documentation); i++) {
@@ -594,17 +611,59 @@ char* SIDOC_get_doc(char* docName) {
             considerMatch(currDoc.documentation_name, lev_distance);
     }
 
+	// Guess what the doc couldve been
+	puts("No exact match found, choose number of relevant doc:\n");
     printMatches();
-    
-    printf("no documentation named '%s' was found\n", docName);
+	char* chosen_doc_name = SIDOC_get_chosen_match();
+
+	// Try to find an exact documentation math
+    for (int i = 0; i < sizeof(docs) / sizeof(SIDOC_Documentation); i++) {
+        SIDOC_Documentation currDoc = docs[i];
+        
+        if (strcmp(currDoc.documentation_name, chosen_doc_name) == 0) {
+			printf("----- %s -----\n", chosen_doc_name);
+            return currDoc.documentation_content;
+		}
+    }
     
     return "";
 }
 
-int main() {
-    char* search_term = "pesh";
-    char* doc_content = SIDOC_get_doc(search_term);
-    printf("----- %s -----\n", search_term);
-    puts(search_term);
-    return 0;
+int main(int argc, char* argv[]) {
+	if (argc <= 1) {
+		puts("SI Documentation, documentation utility for the Simple Virtual Machine");
+		puts("Developed by Luke_\n");
+
+        // printf(COLOR_WHITE COLOR_BG_GREEN COLOR_BOLD " SI ");
+        // printf(COLOR_GREEN COLOR_BG_WHITE COLOR_BOLD " AS \n");
+
+        char logo[] =
+            "##########             \n"
+            "#   ##   # ##  ### ### \n"
+            "# ##### ## # # # # #   \n"
+            "#   ### ## # # # # #   \n"
+            "### ### ## # # # # #   \n"
+            "#   ##   # ##  ### ### \n"
+            "##########             \n";
+
+        for (int i = 0; i < sizeof(logo); i++) {
+            char logo_char = logo[i];
+
+            if (logo_char == '#') {
+                printf(COLOR_BG_MAGENTA "  ");
+            } else if (logo_char == ' ') {
+                printf(COLOR_BG_WHITE "  ");
+            } else {
+                printf(COLOR_NORMAL "%c", logo_char);
+            }
+        }
+
+        puts(COLOR_NORMAL "");
+	} else {
+		char* search_term = argv[1];
+		char* doc_content = SIDOC_get_doc(search_term);
+		
+		puts(doc_content);
+		return 0;
+	}
 }

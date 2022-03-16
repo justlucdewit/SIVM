@@ -1,13 +1,14 @@
 cc = gcc
-bi_sources = bytecode-interpreter/src/main.c
-as_sources = assembler/src/main.c
-da_sources = disassembler/src/main.c
+bi_sources = SIVM/src/main.c
+as_sources = SIAS/src/main.c
+da_sources = SIDA/src/main.c
+doc_sources = SIDOC/src/main.c
 
-all: sivm sias sida
+all: sivm sias sida sidoc
 
 sivm:
 	rm -f builds/sivm
-	$(cc) $(bi_sources) -o builds/sivmsivm_op_alloc
+	$(cc) $(bi_sources) -o builds/sivm
 
 sias:
 	rm -f builds/sias
@@ -16,3 +17,10 @@ sias:
 sida:
 	rm -f builds/sida
 	$(cc) $(da_sources) -o builds/sida
+
+sidoc:
+	rm -f builds/sidoc
+	$(cc) $(doc_sources) -o builds/sidoc
+
+cloc:
+	cloc .
