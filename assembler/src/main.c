@@ -189,7 +189,7 @@ typedef struct {
 
    union {
         char* string_value;
-        u_int32_t uint32_value;
+        u_int64_t uint64_value;
    };
 } sias_token;
 
@@ -274,7 +274,7 @@ sias_parse_result sias_parse_source_code(string_buffer source_code) {
 
                 if (first_character >= '0' && first_character <= '9') {
                     tok.type = SIAS_TOKEN_U_INTEGER;
-                    tok.uint32_value = strtoul(acc, NULL, 10);
+                    tok.uint64_value = strtoull(acc, NULL, 10);
                 } else {
                     tok.type = SIAS_TOKEN_INSTRUCTION;
                     tok.string_value = acc;
@@ -308,7 +308,7 @@ sias_parse_result sias_parse_source_code(string_buffer source_code) {
 
             if (first_character >= '0' && first_character <= '9') {
                 tok.type = SIAS_TOKEN_U_INTEGER;
-                tok.uint32_value = strtoul(acc, NULL, 10);
+                tok.uint64_value = strtoull(acc, NULL, 10);
             } else {
                 if (sias_str_is_instruction(acc))
                     tok.type = SIAS_TOKEN_INSTRUCTION;
@@ -348,7 +348,7 @@ sias_parse_result sias_parse_source_code(string_buffer source_code) {
 
         if (first_character >= '0' && first_character <= '9') {
             tok.type = SIAS_TOKEN_U_INTEGER;
-            tok.uint32_value = strtoul(acc, NULL, 10);
+            tok.uint64_value = strtoull(acc, NULL, 10);
         } else {
             if (sias_str_is_instruction(acc))
                 tok.type = SIAS_TOKEN_INSTRUCTION;
@@ -427,8 +427,12 @@ void sias_generate_bytecode(sias_parse_result parse_result, char* file_name) {
                     exit(1);
                 }
 
-                u_int32_t arg1 = tok.uint32_value;
+                u_int64_t arg1 = tok.uint64_value;
 
+                bytecode[bytecode_length++] = (char) ((arg1 >> 56) & 0xff);
+                bytecode[bytecode_length++] = (char) ((arg1 >> 48) & 0xff);
+                bytecode[bytecode_length++] = (char) ((arg1 >> 40) & 0xff);
+                bytecode[bytecode_length++] = (char) ((arg1 >> 32) & 0xff);
                 bytecode[bytecode_length++] = (char) ((arg1 >> 24) & 0xff);
                 bytecode[bytecode_length++] = (char) ((arg1 >> 16) & 0xff);
                 bytecode[bytecode_length++] = (char) ((arg1 >> 8) & 0xff);
@@ -456,8 +460,12 @@ void sias_generate_bytecode(sias_parse_result parse_result, char* file_name) {
                     exit(1);
                 }
 
-                u_int32_t arg1 = tok.uint32_value;
+                u_int64_t arg1 = tok.uint64_value;
 
+                bytecode[bytecode_length++] = (char) ((arg1 >> 56) & 0xff);
+                bytecode[bytecode_length++] = (char) ((arg1 >> 48) & 0xff);
+                bytecode[bytecode_length++] = (char) ((arg1 >> 40) & 0xff);
+                bytecode[bytecode_length++] = (char) ((arg1 >> 32) & 0xff);
                 bytecode[bytecode_length++] = (char) ((arg1 >> 24) & 0xff);
                 bytecode[bytecode_length++] = (char) ((arg1 >> 16) & 0xff);
                 bytecode[bytecode_length++] = (char) ((arg1 >> 8) & 0xff);
@@ -713,7 +721,7 @@ void sias_post_processor(sias_parse_result parse_result) {
 
             if (found_mark != NULL) {
                 tok->type = SIAS_TOKEN_U_INTEGER;
-                tok->uint32_value = found_mark->byte_index;
+                tok->uint64_value = found_mark->byte_index;
             }
         }
     }
@@ -744,7 +752,6 @@ int main(int argc, char* argv[]) {
 
         // printf(COLOR_WHITE COLOR_BG_GREEN COLOR_BOLD " SI ");
         // printf(COLOR_GREEN COLOR_BG_WHITE COLOR_BOLD " AS \n");
-
 
         char logo[] =
             "##########          \n"
