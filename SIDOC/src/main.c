@@ -21,7 +21,56 @@ int SIDOC_min(int a, int b) {
     return a < b ? a : b;
 }
 
+int min(int a, int b, int c) {
+    if (a < b && a < c)
+        return a;
+
+    else if (b < a && b < c)
+        return b;
+
+    else
+        return c;
+}
+
 SIDOC_Documentation docs[] = {
+    {
+        .documentation_name = "instruction",
+        .documentation_content =
+            "The SI-Assembly language contains a bunch of instructions, each "
+            "corresponding to a single-byte number representation in the "
+            "bytecode.\n\n"
+
+            "Whilst these instructions represented in numeric form (like 0x21) might seem "
+            "completely random, the SIVM instruction set has quite a lot of "
+            "structure to it.\n\n"
+
+            "Each instruction contains 2 parts, one called the 'instruction group' (lets call that one A) "
+            "and one called the 'instruction identifier' (lets call that one B). "
+            "Every instruction is composed of both an instruction identifier, and an instruction group in the form of 0xAB\n\n"
+
+            "In the case of instruction 0x43, the instruction group would be 4 (u64 math) and the instruction identifier would be 3 (meaning it is an u64_div instruction).\n\n"
+
+            "Here is a list of all the instruction groups:\n"
+
+            "0x0. = Miscelaneous\n"
+            "0x1. = Stack operations\n"
+            "0x2. = Control flow\n"
+            "0x3. = Heap read/write\n"
+            "0x4. = u64 Math\n"
+            "0x5. = u32 Math\n"
+            "0x6. = u16 Math\n"
+            "0x7. = u8 Math\n"
+            "0x8. = i64 Math\n"
+            "0x9. = i32 Math\n"
+            "0xA. = i16 Math\n"
+            "0xB. = i8 Math\n"
+            "0xC. = f64 Math\n"
+            "0xD. = f32 Math\n"
+            "0xE. = f16 Math\n"
+            "0xF. = f8 Math\n"
+    },
+            
+
     // Stack manipulation instructions
     {
         .documentation_name = "push",
@@ -60,6 +109,7 @@ SIDOC_Documentation docs[] = {
             "u32_add\n"
             "// stack is now [10]\n"
     },
+    /*
     {
         .documentation_name = "rand",
         .documentation_content = ""
@@ -521,8 +571,8 @@ int min(int a, int b, int c)
         return c;
     } else {
         return 0;
-    }
-}
+    }*/
+};
 
 int matchesMade = 0;
 levenshtein_match best_matches[MAX_MATCH_COUNT];
