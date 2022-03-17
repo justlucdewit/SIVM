@@ -106,7 +106,7 @@ SIDOC_Documentation docs[] = {
     },
     {
         .labels = { "dup", "0x11", "11", "duplicate", "duplication" },
-        .label_count = 3,
+        .label_count = 5,
         .content =
             "dup is a SIVM assembly instruction corresponding to the opcode 0x11 used to duplicate data that is "
             "on the stack. The instruction takes no parameters, pops the top "
