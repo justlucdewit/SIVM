@@ -105,7 +105,7 @@ SIDOC_Documentation docs[] = {
             "// stack is now [5]\n"
     },
     {
-        .labels = { "dup", "0x11", "11" },
+        .labels = { "dup", "0x11", "11", "duplicate", "duplication" },
         .label_count = 3,
         .content =
             "dup is a SIVM assembly instruction corresponding to the opcode 0x11 used to duplicate data that is "
@@ -119,12 +119,21 @@ SIDOC_Documentation docs[] = {
             "u32_add\n"
             "// stack is now [10]\n"
     },
-    /*
+    
     {
-        .documentation_name = "rand",
-        .documentation_content = ""
+        .labels = { "rand", "0x12", "12", "random" },
+        .label_count = 4,
+        .content =
+            "rand is a SIVM assembly instruction corresponding to the opcode 0x12 used to "
+            "insert random data onto the stack, once this instruction is executed, a randomized"
+            "64bit value is pushed onto the stack"
+
+            "\n\n--- Example ---\n"
+            "rand\n"
+            "// stack is now [<random number>]\n"
     },
 
+    /*
     // Miscellaneous instructions
     {
         .documentation_name = "syscall",

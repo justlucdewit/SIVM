@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <sys/types.h>
 
 #include "../../libraries/color.h"
@@ -30,6 +31,20 @@ char* sivm_instr_names[] = {
     "push", "dup", "rand", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop",
     "cskip", "jump", "call", "return", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop"
 };
+
+// Generate u64 random numbers
+#define IMAX_BITS(m) ((m)/((m)%255+1) / 255%255*8 + 7-86/((m)%255+12))
+#define RAND_MAX_WIDTH IMAX_BITS(RAND_MAX)
+_Static_assert((RAND_MAX & (RAND_MAX + 1u)) == 0, "RAND_MAX not a Mersenne number");
+
+u64 rand64() {
+  u64 r = 0;
+  for (int i = 0; i < 64; i += RAND_MAX_WIDTH) {
+    r <<= RAND_MAX_WIDTH;
+    r ^= (unsigned) rand();
+  }
+  return r;
+}
 
 u8 sivm_fetch8() {
     ++program_counter;
@@ -104,6 +119,10 @@ void sivm_op_push() {
 void sivm_op_dup() {
     u64 num = sivm_stack[sivm_stack_pointer - 1];
     sivm_stack_push(num);
+}
+
+void sivm_op_rand() {
+    sivm_stack_push(rand64());
 }
 
 void sivm_op_alloc() {
@@ -183,6 +202,8 @@ _Noreturn void sivm_run_program() {
             sivm_op_push();
         else if (opcode == 0x11)
             sivm_op_dup();
+        else if (opcode == 0x12)
+            sivm_op_rand();
 
         // else if (opcode == 0x21)
         //     sivm_op_jump();
@@ -232,6 +253,7 @@ int main(int argc, char* argv[]) {
         puts("");
 
     } else {
+        srand(time(0));
         char* file_name = argv[1];
         sivm_init();
         sivm_load_program(file_name);
