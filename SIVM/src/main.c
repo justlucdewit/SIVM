@@ -7,6 +7,7 @@
 
 #define SIVM_STACK_CAPACITY 255
 #define SIVM_MEMORY_CAPACITY 255
+#define SIVM_DEBUG 1
 
 typedef u_int8_t u8;
 typedef u_int16_t u16;
@@ -21,15 +22,13 @@ typedef int64_t i64;
 u64* sivm_stack;
 u64 sivm_stack_pointer = 0;
 u64 program_counter = 0;
-u8 sivm_debug = 0;
 
 u8* sivm_memory;
 
 char* sivm_instr_names[] = {
-    "OP_SYSCALL",
-    "OP_JUMP",
-    "OP_CSKIP",
-    "OP_PUSH"
+    "syscall", "dynamic_load", "alloc", "free", "realloc", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop",
+    "push", "dup", "rand", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop",
+    "cskip", "jump", "call", "return", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop"
 };
 
 u8 sivm_fetch8() {
@@ -68,6 +67,16 @@ void sivm_sys_write() {
 
 void sivm_sys_exit() {
     u64 exit_code = sivm_stack_pop();
+
+    if (SIVM_DEBUG) {
+        puts("\n--- stack result ---");
+
+        while (sivm_stack_pointer > 0)
+            printf(" - %lu\n", sivm_stack_pop());
+
+        puts("--------------------");
+    }
+
     exit(exit_code);
 }
 
@@ -89,6 +98,11 @@ void sivm_op_jump() {
 
 void sivm_op_push() {
     u64 num = sivm_fetch64();
+    sivm_stack_push(num);
+}
+
+void sivm_op_dup() {
+    u64 num = sivm_stack[sivm_stack_pointer - 1];
     sivm_stack_push(num);
 }
 
@@ -159,15 +173,19 @@ _Noreturn void sivm_run_program() {
     u8 opcode = sivm_memory[program_counter];
 
     while(1) {
-        if (sivm_debug)
-            printf("0x%.8lX %s\n", program_counter, sivm_instr_names[opcode]);
+        if (SIVM_DEBUG)
+            printf("0x%.2X @ 0x%.8lX %s\n", opcode, program_counter, sivm_instr_names[opcode]);
 
         if (opcode == 0x00)
             sivm_op_syscall();
-        else if (opcode == 0x21)
-            sivm_op_jump();
+
         else if (opcode == 0x10)
             sivm_op_push();
+        else if (opcode == 0x11)
+            sivm_op_dup();
+
+        else if (opcode == 0x21)
+            sivm_op_jump();
         else if (opcode == 0x40)
             sivm_op_alloc();
         else if (opcode == 0x50)
