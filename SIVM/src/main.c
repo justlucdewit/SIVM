@@ -184,18 +184,18 @@ _Noreturn void sivm_run_program() {
         else if (opcode == 0x11)
             sivm_op_dup();
 
-        else if (opcode == 0x21)
-            sivm_op_jump();
-        else if (opcode == 0x40)
-            sivm_op_alloc();
-        else if (opcode == 0x50)
-            sivm_op_ui32_add();
-        else if (opcode == 0x51)
-            sivm_op_ui32_sub();
-        else if (opcode == 0x52)
-            sivm_op_ui32_div();
-        else if (opcode == 0x53)
-            sivm_op_ui32_mul();
+        // else if (opcode == 0x21)
+        //     sivm_op_jump();
+        // else if (opcode == 0x40)
+        //     sivm_op_alloc();
+        // else if (opcode == 0x50)
+        //     sivm_op_ui32_add();
+        // else if (opcode == 0x51)
+        //     sivm_op_ui32_sub();
+        // else if (opcode == 0x52)
+        //     sivm_op_ui32_div();
+        // else if (opcode == 0x53)
+        //     sivm_op_ui32_mul();
         
         else
             printf("unknown opcode (0x%.2X)\n", opcode);

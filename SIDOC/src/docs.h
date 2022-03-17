@@ -45,14 +45,48 @@ SIDOC_Documentation docs[] = {
             "0xE. = f16 Math\n"
             "0xF. = f8 Math\n"
     },
-            
+
+    // Miscelaneous instructions
+    {
+        .labels = { "syscall", "0x00", "00" },
+        .label_count = 3,
+        .content =
+            "syscall is a SIVM assembly instruction corresponding to the opcode 0x00 used for executing SIVM "
+            "system calls, which can do various different things like priting, "
+            "reading input, or creating a websocket\n\n"
+
+            "The syscall instruction always needs at least 1 numeric argument "
+            "which it pops from the stack and interprets as a u64 number. This "
+            "number is then considered the 'syscall id', and each id corresponds "
+            "to a different syscall.\n\n"
+
+            "Some syscall id's need extra arguments, which they will then also "
+            "pop off the stack, for example: the SYS_EXIT syscall needs 1 argument "
+            "which is the exit code, we notate this like SYS_EXIT <exit_code>\n\n"
+
+            "--- SYSCALL list ---\n"
+
+            "0 - SYS_PRINT <string_pointer> <string_length>\n"
+            "1 - SYS_EXIT <exit_code>\n\n"
+
+            "--- Example ---\n"
+
+            "// exit code\n"
+            "push 7\n\n"
+
+            "// SYS_EXIT\n"
+            "push 0\n"
+            "syscall\n\n"
+            "// stack is now empty\n"
+            "// program exists with code 7\n"
+    },            
 
     // Stack manipulation instructions
     {
-        .labels = { "push", "0x10", "10", "0x11" },
-        .label_count = 4,
+        .labels = { "push", "0x10", "10" },
+        .label_count = 3,
         .content =
-            "push is a SIVM assembly instruction used for pushing new items onto "
+            "push is a SIVM assembly instruction corresponding to the opcode 0x10 used for pushing new items onto "
             "the stack, the instruction takes one single argument in the form of 8 "
             "bytes, this data will then be pushed onto the stack as a unsigned 64 "
             "bit integer."
@@ -68,15 +102,13 @@ SIDOC_Documentation docs[] = {
             "\n\n--- Example ---\n"
 
             "push 5\n"
-            "push 7\n"
-            "u32_add\n"
-            "// stack is now [12]\n"
+            "// stack is now [5]\n"
     },
     {
         .labels = { "dup", "0x11", "11" },
         .label_count = 3,
         .content =
-            "dup is a SIVM assembly instruction used to duplicate data that is "
+            "dup is a SIVM assembly instruction corresponding to the opcode 0x11 used to duplicate data that is "
             "on the stack. The instruction takes no parameters, pops the top "
             "item of the stack into a temporary buffer, and then pushes it "
             "back twice."
