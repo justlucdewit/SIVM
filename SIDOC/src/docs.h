@@ -163,6 +163,21 @@ SIDOC_Documentation docs[] = {
             "cycle\n"
             "// stack is now [12, 56, 34]\n"
     },
+    {
+        .labels = { "pop", "popping", "0x15", "15" },
+        .label_count = 4,
+        .content = "pop is a SIVM assembly instruction corresponding to the opcode 0x15 used for "
+            "manipulating the stack. When the SIVM encounters the pop opcode, "
+            "it will take the top value off the stack and void it\n\n"
+
+            "--- Example ---\n"
+            "push 12\n"
+            "push 34\n"
+            "// stack is now [34, 21]\n\n"
+
+            "pop\n"
+            "// stack is now [21]\n"
+    },
 
     /*
     // Miscellaneous instructions
