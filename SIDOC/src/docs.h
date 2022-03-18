@@ -119,7 +119,6 @@ SIDOC_Documentation docs[] = {
             "u32_add\n"
             "// stack is now [10]\n"
     },
-    
     {
         .labels = { "rand", "0x12", "12", "random" },
         .label_count = 4,
@@ -131,6 +130,21 @@ SIDOC_Documentation docs[] = {
             "\n\n--- Example ---\n"
             "rand\n"
             "// stack is now [<random number>]\n"
+    },
+    {
+        .labels = { "swap", "swapping", "0x13", "13" },
+        .label_count = 4,
+        .content = "swap is a SIVM assembly instruction corresponding to the opcode 0x13 used for "
+            "manipulating the top values of the stack. When the SIVM encounters the swap opcode, "
+            "it will remove the top 2 values of the stack, and insert them back, swapped around\n\n"
+
+            "--- Example ---\n"
+            "push 38\n"
+            "push 21\n"
+            "// stack is now [21, 38]\n\n"
+
+            "swap\n"
+            "// stack is now [38, 21]\n"
     },
 
     /*
