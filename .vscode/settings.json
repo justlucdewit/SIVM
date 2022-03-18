@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "*.bcs": "pseudocode",
+        "*.bsc": "pseudocode",
+        "stdlib.h": "c"
+    }
+}

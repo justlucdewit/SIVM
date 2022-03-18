@@ -1,67 +1,97 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <sys/types.h>
 
 #include "../../libraries/color.h"
 
 #define SIVM_STACK_CAPACITY 255
 #define SIVM_MEMORY_CAPACITY 255
+#define SIVM_DEBUG 1
 
 typedef u_int8_t u8;
+typedef u_int16_t u16;
 typedef u_int32_t u32;
-typedef int32_t i32;
+typedef u_int64_t u64;
 
-u32* sivm_stack;
-u32 sivm_stack_pointer = 0;
-u32 program_counter = 0;
-u8 sivm_debug = 0;
+typedef int8_t i8;
+typedef int16_t i16;
+typedef int32_t i32;
+typedef int64_t i64;
+
+u64* sivm_stack;
+u64 sivm_stack_pointer = 0;
+u64 program_counter = 0;
 
 u8* sivm_memory;
 
 char* sivm_instr_names[] = {
-    "OP_SYSCALL",
-    "OP_JUMP",
-    "OP_CSKIP",
-    "OP_PUSH"
+    "syscall", "dynamic_load", "alloc", "free", "realloc", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop",
+    "push", "dup", "rand", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop",
+    "cskip", "jump", "call", "return", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop"
 };
+
+// Generate u64 random numbers
+#define IMAX_BITS(m) ((m)/((m)%255+1) / 255%255*8 + 7-86/((m)%255+12))
+#define RAND_MAX_WIDTH IMAX_BITS(RAND_MAX)
+_Static_assert((RAND_MAX & (RAND_MAX + 1u)) == 0, "RAND_MAX not a Mersenne number");
+
+u64 rand64() {
+  u64 r = 0;
+  for (int i = 0; i < 64; i += RAND_MAX_WIDTH) {
+    r <<= RAND_MAX_WIDTH;
+    r ^= (unsigned) rand();
+  }
+  return r;
+}
 
 u8 sivm_fetch8() {
     ++program_counter;
     return sivm_memory[program_counter];
 }
 
-u32 sivm_fetch32() {
-    u32 result = 1;
+u64 sivm_fetch64() {
+    u64 result = 1;
 
-    for(i32 i = 0; i < 4; i++) {
-        u32 nextByte = sivm_fetch8();
+    for(u8 i = 0; i < 8; i++) {
+        u64 nextByte = sivm_fetch8();
         result = (result << 8) | nextByte;
     }
 
     return result;
 }
 
-void sivm_stack_push(u32 number) {
+void sivm_stack_push(u64 number) {
     sivm_stack[sivm_stack_pointer] = number;
     ++sivm_stack_pointer;
 }
 
-u32 sivm_stack_pop() {
+u64 sivm_stack_pop() {
    --sivm_stack_pointer;
-   u32 ret = sivm_stack[sivm_stack_pointer];
+   u64 ret = sivm_stack[sivm_stack_pointer];
    return ret;
 }
 
 void sivm_sys_write() {
-    u32 string_length = sivm_stack_pop();
-    u32 string_ptr = sivm_stack_pop();
+    u64 string_length = sivm_stack_pop();
+    u64 string_ptr = sivm_stack_pop();
 
     fwrite(((char *)sivm_memory) + string_ptr, sizeof(char), string_length, stdout);
 }
 
 void sivm_sys_exit() {
-    u32 exit_code = sivm_stack_pop();
+    u64 exit_code = sivm_stack_pop();
+
+    if (SIVM_DEBUG) {
+        puts("\n--- stack result ---");
+
+        while (sivm_stack_pointer > 0)
+            printf(" - %lu\n", sivm_stack_pop());
+
+        puts("--------------------");
+    }
+
     exit(exit_code);
 }
 
@@ -77,41 +107,56 @@ void sivm_op_syscall() {
 }
 
 void sivm_op_jump() {
-    u32 num = sivm_fetch32();
+    u64 num = sivm_fetch64();
     program_counter = num - 1;
 }
 
 void sivm_op_push() {
-    u32 num = sivm_fetch32();
+    u64 num = sivm_fetch64();
     sivm_stack_push(num);
 }
 
+void sivm_op_dup() {
+    u64 num = sivm_stack[sivm_stack_pointer - 1];
+    sivm_stack_push(num);
+}
+
+void sivm_op_rand() {
+    sivm_stack_push(rand64());
+}
+
+void sivm_op_alloc() {
+    u64 bytes = sivm_fetch64();
+    void* ptr = malloc(sizeof(u8) * bytes);
+    sivm_stack_push((u64) ptr);
+}
+
 void sivm_op_ui32_add() {
-    u32 a = sivm_stack_pop();
-    u32 b = sivm_stack_pop();
+    u64 a = sivm_stack_pop();
+    u64 b = sivm_stack_pop();
     sivm_stack_push(a + b);
 }
 
 void sivm_op_ui32_sub() {
-    u32 a = sivm_stack_pop();
-    u32 b = sivm_stack_pop();
+    u64 a = sivm_stack_pop();
+    u64 b = sivm_stack_pop();
     sivm_stack_push(a - b);
 }
 
 void sivm_op_ui32_mul() {
-    u32 a = sivm_stack_pop();
-    u32 b = sivm_stack_pop();
+    u64 a = sivm_stack_pop();
+    u64 b = sivm_stack_pop();
     sivm_stack_push(a * b);
 }
 
 void sivm_op_ui32_div() {
-    u32 a = sivm_stack_pop();
-    u32 b = sivm_stack_pop();
+    u64 a = sivm_stack_pop();
+    u64 b = sivm_stack_pop();
     sivm_stack_push(a / b);
 }
 
 void sivm_init() {
-    sivm_stack = malloc(sizeof(u32) * SIVM_STACK_CAPACITY);
+    sivm_stack = malloc(sizeof(u64) * SIVM_STACK_CAPACITY);
     sivm_memory = malloc(sizeof(u8) * SIVM_MEMORY_CAPACITY);
 }
 
@@ -147,23 +192,32 @@ _Noreturn void sivm_run_program() {
     u8 opcode = sivm_memory[program_counter];
 
     while(1) {
-        if (sivm_debug)
-            printf("0x%.8X %s\n", program_counter, sivm_instr_names[opcode]);
+        if (SIVM_DEBUG)
+            printf("0x%.2X @ 0x%.8lX %s\n", opcode, program_counter, sivm_instr_names[opcode]);
 
         if (opcode == 0x00)
             sivm_op_syscall();
-        else if (opcode == 0x01)
-            sivm_op_jump();
-        else if (opcode == 0x03)
+
+        else if (opcode == 0x10)
             sivm_op_push();
-        else if (opcode == 0x0C)
-            sivm_op_ui32_add();
-        else if (opcode == 0x0D)
-            sivm_op_ui32_sub();
-        else if (opcode == 0x0E)
-            sivm_op_ui32_mul();
-        else if (opcode == 0x0F)
-            sivm_op_ui32_div();
+        else if (opcode == 0x11)
+            sivm_op_dup();
+        else if (opcode == 0x12)
+            sivm_op_rand();
+
+        // else if (opcode == 0x21)
+        //     sivm_op_jump();
+        // else if (opcode == 0x40)
+        //     sivm_op_alloc();
+        // else if (opcode == 0x50)
+        //     sivm_op_ui32_add();
+        // else if (opcode == 0x51)
+        //     sivm_op_ui32_sub();
+        // else if (opcode == 0x52)
+        //     sivm_op_ui32_div();
+        // else if (opcode == 0x53)
+        //     sivm_op_ui32_mul();
+        
         else
             printf("unknown opcode (0x%.2X)\n", opcode);
 
@@ -199,6 +253,7 @@ int main(int argc, char* argv[]) {
         puts("");
 
     } else {
+        srand(time(0));
         char* file_name = argv[1];
         sivm_init();
         sivm_load_program(file_name);

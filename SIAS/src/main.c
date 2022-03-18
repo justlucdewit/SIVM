@@ -39,29 +39,45 @@ int sias_str_is_instruction(char* str) {
         strcmp(str, "free") == 0 ||
         strcmp(str, "realloc") == 0 ||
 
-        strcmp(str, "ui32_add") == 0 ||
-        strcmp(str, "ui32_sub") == 0 ||
-        strcmp(str, "ui32_mul") == 0 ||
-        strcmp(str, "ui32_div") == 0 ||
-        strcmp(str, "ui32_pow") == 0 ||
-        strcmp(str, "ui32_sqrt") == 0 ||
-        strcmp(str, "ui32_mod") == 0 ||
+        strcmp(str, "u64_add") == 0 ||
+        strcmp(str, "u64_sub") == 0 ||
+        strcmp(str, "u64_mul") == 0 ||
+        strcmp(str, "u64_div") == 0 ||
+        strcmp(str, "u64_pow") == 0 ||
+        strcmp(str, "u64_sqrt") == 0 ||
+        strcmp(str, "u64_mod") == 0 ||
 
-        strcmp(str, "ui16_add") == 0 ||
-        strcmp(str, "ui16_sub") == 0 ||
-        strcmp(str, "ui16_mul") == 0 ||
-        strcmp(str, "ui16_div") == 0 ||
-        strcmp(str, "ui16_pow") == 0 ||
-        strcmp(str, "ui16_sqrt") == 0 ||
-        strcmp(str, "ui16_mod") == 0 ||
+        strcmp(str, "u32_add") == 0 ||
+        strcmp(str, "u32_sub") == 0 ||
+        strcmp(str, "u32_mul") == 0 ||
+        strcmp(str, "u32_div") == 0 ||
+        strcmp(str, "u32_pow") == 0 ||
+        strcmp(str, "u32_sqrt") == 0 ||
+        strcmp(str, "u32_mod") == 0 ||
 
-        strcmp(str, "ui8_add") == 0 ||
-        strcmp(str, "ui8_sub") == 0 ||
-        strcmp(str, "ui8_mul") == 0 ||
-        strcmp(str, "ui8_div") == 0 ||
-        strcmp(str, "ui8_pow") == 0 ||
-        strcmp(str, "ui8_sqrt") == 0 ||
-        strcmp(str, "ui8_mod") == 0 ||
+        strcmp(str, "u16_add") == 0 ||
+        strcmp(str, "u16_sub") == 0 ||
+        strcmp(str, "u16_mul") == 0 ||
+        strcmp(str, "u16_div") == 0 ||
+        strcmp(str, "u16_pow") == 0 ||
+        strcmp(str, "u16_sqrt") == 0 ||
+        strcmp(str, "u16_mod") == 0 ||
+
+        strcmp(str, "u8_add") == 0 ||
+        strcmp(str, "u8_sub") == 0 ||
+        strcmp(str, "u8_mul") == 0 ||
+        strcmp(str, "u8_div") == 0 ||
+        strcmp(str, "u8_pow") == 0 ||
+        strcmp(str, "u8_sqrt") == 0 ||
+        strcmp(str, "u8_mod") == 0 ||
+
+        strcmp(str, "i64_add") == 0 ||
+        strcmp(str, "i64_sub") == 0 ||
+        strcmp(str, "i64_mul") == 0 ||
+        strcmp(str, "i64_div") == 0 ||
+        strcmp(str, "i64_pow") == 0 ||
+        strcmp(str, "i64_sqrt") == 0 ||
+        strcmp(str, "i64_mod") == 0 ||
 
         strcmp(str, "i32_add") == 0 ||
         strcmp(str, "i32_sub") == 0 ||
@@ -86,6 +102,13 @@ int sias_str_is_instruction(char* str) {
         strcmp(str, "i8_pow") == 0 ||
         strcmp(str, "i8_sqrt") == 0 ||
         strcmp(str, "i8_mod") == 0 ||
+
+        strcmp(str, "f64_add") == 0 ||
+        strcmp(str, "f64_sub") == 0 ||
+        strcmp(str, "f64_mul") == 0 ||
+        strcmp(str, "f64_div") == 0 ||
+        strcmp(str, "f64_pow") == 0 ||
+        strcmp(str, "f64_sqrt") == 0 ||
 
         strcmp(str, "f32_add") == 0 ||
         strcmp(str, "f32_sub") == 0 ||
@@ -189,7 +212,7 @@ typedef struct {
 
    union {
         char* string_value;
-        u_int32_t uint32_value;
+        u_int64_t uint64_value;
    };
 } sias_token;
 
@@ -274,7 +297,7 @@ sias_parse_result sias_parse_source_code(string_buffer source_code) {
 
                 if (first_character >= '0' && first_character <= '9') {
                     tok.type = SIAS_TOKEN_U_INTEGER;
-                    tok.uint32_value = strtoul(acc, NULL, 10);
+                    tok.uint64_value = strtoull(acc, NULL, 10);
                 } else {
                     tok.type = SIAS_TOKEN_INSTRUCTION;
                     tok.string_value = acc;
@@ -308,7 +331,7 @@ sias_parse_result sias_parse_source_code(string_buffer source_code) {
 
             if (first_character >= '0' && first_character <= '9') {
                 tok.type = SIAS_TOKEN_U_INTEGER;
-                tok.uint32_value = strtoul(acc, NULL, 10);
+                tok.uint64_value = strtoull(acc, NULL, 10);
             } else {
                 if (sias_str_is_instruction(acc))
                     tok.type = SIAS_TOKEN_INSTRUCTION;
@@ -348,7 +371,7 @@ sias_parse_result sias_parse_source_code(string_buffer source_code) {
 
         if (first_character >= '0' && first_character <= '9') {
             tok.type = SIAS_TOKEN_U_INTEGER;
-            tok.uint32_value = strtoul(acc, NULL, 10);
+            tok.uint64_value = strtoull(acc, NULL, 10);
         } else {
             if (sias_str_is_instruction(acc))
                 tok.type = SIAS_TOKEN_INSTRUCTION;
@@ -414,6 +437,12 @@ void sias_generate_bytecode(sias_parse_result parse_result, char* file_name) {
                 bytecode[bytecode_length++] = 0x00;
             } else if (strcmp(tok.string_value, "dynamic_load") == 0) {
                 bytecode[bytecode_length++] = 0x01;
+            } else if (strcmp(tok.string_value, "alloc") == 0) {
+                bytecode[bytecode_length++] = 0x02;
+            } else if (strcmp(tok.string_value, "free") == 0) {
+                bytecode[bytecode_length++] = 0x03;
+            } else if (strcmp(tok.string_value, "realloc") == 0) {
+                bytecode[bytecode_length++] = 0x04;
             
             // Stack
             } else if (strcmp(tok.string_value, "push") == 0) {
@@ -427,8 +456,12 @@ void sias_generate_bytecode(sias_parse_result parse_result, char* file_name) {
                     exit(1);
                 }
 
-                u_int32_t arg1 = tok.uint32_value;
+                u_int64_t arg1 = tok.uint64_value;
 
+                bytecode[bytecode_length++] = (char) ((arg1 >> 56) & 0xff);
+                bytecode[bytecode_length++] = (char) ((arg1 >> 48) & 0xff);
+                bytecode[bytecode_length++] = (char) ((arg1 >> 40) & 0xff);
+                bytecode[bytecode_length++] = (char) ((arg1 >> 32) & 0xff);
                 bytecode[bytecode_length++] = (char) ((arg1 >> 24) & 0xff);
                 bytecode[bytecode_length++] = (char) ((arg1 >> 16) & 0xff);
                 bytecode[bytecode_length++] = (char) ((arg1 >> 8) & 0xff);
@@ -456,8 +489,12 @@ void sias_generate_bytecode(sias_parse_result parse_result, char* file_name) {
                     exit(1);
                 }
 
-                u_int32_t arg1 = tok.uint32_value;
+                u_int64_t arg1 = tok.uint64_value;
 
+                bytecode[bytecode_length++] = (char) ((arg1 >> 56) & 0xff);
+                bytecode[bytecode_length++] = (char) ((arg1 >> 48) & 0xff);
+                bytecode[bytecode_length++] = (char) ((arg1 >> 40) & 0xff);
+                bytecode[bytecode_length++] = (char) ((arg1 >> 32) & 0xff);
                 bytecode[bytecode_length++] = (char) ((arg1 >> 24) & 0xff);
                 bytecode[bytecode_length++] = (char) ((arg1 >> 16) & 0xff);
                 bytecode[bytecode_length++] = (char) ((arg1 >> 8) & 0xff);
@@ -481,151 +518,191 @@ void sias_generate_bytecode(sias_parse_result parse_result, char* file_name) {
             } else if (strcmp(tok.string_value, "read32") == 0) {
                 bytecode[bytecode_length++] = 0x35;
 
-            // Heap memory management
-            } else if (strcmp(tok.string_value, "alloc") == 0) {
+            
+
+            // ui64 math
+            } else if (strcmp(tok.string_value, "u64_add") == 0) {
                 bytecode[bytecode_length++] = 0x40;
-            } else if (strcmp(tok.string_value, "free") == 0) {
+            } else if (strcmp(tok.string_value, "u64_sub") == 0) {
                 bytecode[bytecode_length++] = 0x41;
-            } else if (strcmp(tok.string_value, "realloc") == 0) {
+            } else if (strcmp(tok.string_value, "u64_mul") == 0) {
                 bytecode[bytecode_length++] = 0x42;
+            } else if (strcmp(tok.string_value, "u64_div") == 0) {
+                bytecode[bytecode_length++] = 0x43;
+            } else if (strcmp(tok.string_value, "u64_pow") == 0) {
+                bytecode[bytecode_length++] = 0x44;
+            } else if (strcmp(tok.string_value, "u64_sqrt") == 0) {
+                bytecode[bytecode_length++] = 0x45;
+            } else if (strcmp(tok.string_value, "u64_mod") == 0) {
+                bytecode[bytecode_length++] = 0x46;
 
             // ui32 math
-            } else if (strcmp(tok.string_value, "ui32_add") == 0) {
+            } else if (strcmp(tok.string_value, "u32_add") == 0) {
                 bytecode[bytecode_length++] = 0x50;
-            } else if (strcmp(tok.string_value, "ui32_sub") == 0) {
+            } else if (strcmp(tok.string_value, "u32_sub") == 0) {
                 bytecode[bytecode_length++] = 0x51;
-            } else if (strcmp(tok.string_value, "ui32_mul") == 0) {
+            } else if (strcmp(tok.string_value, "u32_mul") == 0) {
                 bytecode[bytecode_length++] = 0x52;
-            } else if (strcmp(tok.string_value, "ui32_div") == 0) {
+            } else if (strcmp(tok.string_value, "u32_div") == 0) {
                 bytecode[bytecode_length++] = 0x53;
-            } else if (strcmp(tok.string_value, "ui32_pow") == 0) {
+            } else if (strcmp(tok.string_value, "u32_pow") == 0) {
                 bytecode[bytecode_length++] = 0x54;
-            } else if (strcmp(tok.string_value, "ui32_sqrt") == 0) {
+            } else if (strcmp(tok.string_value, "u32_sqrt") == 0) {
                 bytecode[bytecode_length++] = 0x55;
-            } else if (strcmp(tok.string_value, "ui32_mod") == 0) {
+            } else if (strcmp(tok.string_value, "u32_mod") == 0) {
                 bytecode[bytecode_length++] = 0x56;
 
             // ui16 math
-            } else if (strcmp(tok.string_value, "ui16_add") == 0) {
+            } else if (strcmp(tok.string_value, "u16_add") == 0) {
                 bytecode[bytecode_length++] = 0x60;
-            } else if (strcmp(tok.string_value, "ui16_sub") == 0) {
+            } else if (strcmp(tok.string_value, "u16_sub") == 0) {
                 bytecode[bytecode_length++] = 0x61;
-            } else if (strcmp(tok.string_value, "ui16_mul") == 0) {
+            } else if (strcmp(tok.string_value, "u16_mul") == 0) {
                 bytecode[bytecode_length++] = 0x62;
-            } else if (strcmp(tok.string_value, "ui16_div") == 0) {
+            } else if (strcmp(tok.string_value, "u16_div") == 0) {
                 bytecode[bytecode_length++] = 0x63;
-            } else if (strcmp(tok.string_value, "ui16_pow") == 0) {
+            } else if (strcmp(tok.string_value, "u16_pow") == 0) {
                 bytecode[bytecode_length++] = 0x64;
-            } else if (strcmp(tok.string_value, "ui16_sqrt") == 0) {
+            } else if (strcmp(tok.string_value, "u16_sqrt") == 0) {
                 bytecode[bytecode_length++] = 0x65;
-            } else if (strcmp(tok.string_value, "ui16_mod") == 0) {
+            } else if (strcmp(tok.string_value, "u16_mod") == 0) {
                 bytecode[bytecode_length++] = 0x66;
 
             // ui8 math
-            } else if (strcmp(tok.string_value, "ui8_add") == 0) {
+            } else if (strcmp(tok.string_value, "u8_add") == 0) {
                 bytecode[bytecode_length++] = 0x70;
-            } else if (strcmp(tok.string_value, "ui8_sub") == 0) {
+            } else if (strcmp(tok.string_value, "u8_sub") == 0) {
                 bytecode[bytecode_length++] = 0x71;
-            } else if (strcmp(tok.string_value, "ui8_mul") == 0) {
+            } else if (strcmp(tok.string_value, "u8_mul") == 0) {
                 bytecode[bytecode_length++] = 0x72;
-            } else if (strcmp(tok.string_value, "ui8_div") == 0) {
+            } else if (strcmp(tok.string_value, "u8_div") == 0) {
                 bytecode[bytecode_length++] = 0x73;
-            } else if (strcmp(tok.string_value, "ui8_pow") == 0) {
+            } else if (strcmp(tok.string_value, "u8_pow") == 0) {
                 bytecode[bytecode_length++] = 0x74;
-            } else if (strcmp(tok.string_value, "ui8_sqrt") == 0) {
+            } else if (strcmp(tok.string_value, "u8_sqrt") == 0) {
                 bytecode[bytecode_length++] = 0x75;
-            } else if (strcmp(tok.string_value, "ui8_mod") == 0) {
+            } else if (strcmp(tok.string_value, "u8_mod") == 0) {
                 bytecode[bytecode_length++] = 0x76;
+
+            // i64 math
+            } else if (strcmp(tok.string_value, "i64_add") == 0) {
+                bytecode[bytecode_length++] = 0x80;
+            } else if (strcmp(tok.string_value, "i64_sub") == 0) {
+                bytecode[bytecode_length++] = 0x81;
+            } else if (strcmp(tok.string_value, "i64_mul") == 0) {
+                bytecode[bytecode_length++] = 0x82;
+            } else if (strcmp(tok.string_value, "i64_div") == 0) {
+                bytecode[bytecode_length++] = 0x83;
+            } else if (strcmp(tok.string_value, "i64_pow") == 0) {
+                bytecode[bytecode_length++] = 0x84;
+            } else if (strcmp(tok.string_value, "i64_sqrt") == 0) {
+                bytecode[bytecode_length++] = 0x85;
+            } else if (strcmp(tok.string_value, "i64_mod") == 0) {
+                bytecode[bytecode_length++] = 0x86;
 
             // i32 math
             } else if (strcmp(tok.string_value, "i32_add") == 0) {
-                bytecode[bytecode_length++] = 0x80;
+                bytecode[bytecode_length++] = 0x90;
             } else if (strcmp(tok.string_value, "i32_sub") == 0) {
-                bytecode[bytecode_length++] = 0x81;
+                bytecode[bytecode_length++] = 0x91;
             } else if (strcmp(tok.string_value, "i32_mul") == 0) {
-                bytecode[bytecode_length++] = 0x82;
+                bytecode[bytecode_length++] = 0x92;
             } else if (strcmp(tok.string_value, "i32_div") == 0) {
-                bytecode[bytecode_length++] = 0x83;
+                bytecode[bytecode_length++] = 0x93;
             } else if (strcmp(tok.string_value, "i32_pow") == 0) {
-                bytecode[bytecode_length++] = 0x84;
+                bytecode[bytecode_length++] = 0x94;
             } else if (strcmp(tok.string_value, "i32_sqrt") == 0) {
-                bytecode[bytecode_length++] = 0x85;
+                bytecode[bytecode_length++] = 0x95;
             } else if (strcmp(tok.string_value, "i32_mod") == 0) {
-                bytecode[bytecode_length++] = 0x86;
+                bytecode[bytecode_length++] = 0x96;
 
             // i16 math
             } else if (strcmp(tok.string_value, "i16_add") == 0) {
-                bytecode[bytecode_length++] = 0x90;
+                bytecode[bytecode_length++] = 0xa0;
             } else if (strcmp(tok.string_value, "i16_sub") == 0) {
-                bytecode[bytecode_length++] = 0x91;
+                bytecode[bytecode_length++] = 0xa1;
             } else if (strcmp(tok.string_value, "i16_mul") == 0) {
-                bytecode[bytecode_length++] = 0x92;
+                bytecode[bytecode_length++] = 0xa2;
             } else if (strcmp(tok.string_value, "i16_div") == 0) {
-                bytecode[bytecode_length++] = 0x93;
+                bytecode[bytecode_length++] = 0xa3;
             } else if (strcmp(tok.string_value, "i16_pow") == 0) {
-                bytecode[bytecode_length++] = 0x94;
+                bytecode[bytecode_length++] = 0xa4;
             } else if (strcmp(tok.string_value, "i16_sqrt") == 0) {
-                bytecode[bytecode_length++] = 0x95;
+                bytecode[bytecode_length++] = 0xa5;
             } else if (strcmp(tok.string_value, "i16_mod") == 0) {
-                bytecode[bytecode_length++] = 0x96;
+                bytecode[bytecode_length++] = 0xa6;
 
             // i8 math
             } else if (strcmp(tok.string_value, "i8_add") == 0) {
-                bytecode[bytecode_length++] = 0xA0;
+                bytecode[bytecode_length++] = 0xb0;
             } else if (strcmp(tok.string_value, "i8_sub") == 0) {
-                bytecode[bytecode_length++] = 0xA1;
+                bytecode[bytecode_length++] = 0xb1;
             } else if (strcmp(tok.string_value, "i8_mul") == 0) {
-                bytecode[bytecode_length++] = 0xA2;
+                bytecode[bytecode_length++] = 0xb2;
             } else if (strcmp(tok.string_value, "i8_div") == 0) {
-                bytecode[bytecode_length++] = 0xA3;
+                bytecode[bytecode_length++] = 0xb3;
             } else if (strcmp(tok.string_value, "i8_pow") == 0) {
-                bytecode[bytecode_length++] = 0xA4;
+                bytecode[bytecode_length++] = 0xb4;
             } else if (strcmp(tok.string_value, "i8_sqrt") == 0) {
-                bytecode[bytecode_length++] = 0xA5;
+                bytecode[bytecode_length++] = 0xb5;
             } else if (strcmp(tok.string_value, "i8_mod") == 0) {
-                bytecode[bytecode_length++] = 0xA6;
+                bytecode[bytecode_length++] = 0xb6;
+
+            // f64 math
+            } else if (strcmp(tok.string_value, "f64_add") == 0) {
+                bytecode[bytecode_length++] = 0xc0;
+            } else if (strcmp(tok.string_value, "f64_sub") == 0) {
+                bytecode[bytecode_length++] = 0xc1;
+            } else if (strcmp(tok.string_value, "f64_mul") == 0) {
+                bytecode[bytecode_length++] = 0xc2;
+            } else if (strcmp(tok.string_value, "f64_div") == 0) {
+                bytecode[bytecode_length++] = 0xc3;
+            } else if (strcmp(tok.string_value, "f64_pow") == 0) {
+                bytecode[bytecode_length++] = 0xc4;
+            } else if (strcmp(tok.string_value, "f64_sqrt") == 0) {
+                bytecode[bytecode_length++] = 0xc5;
 
             // f32 math
             } else if (strcmp(tok.string_value, "f32_add") == 0) {
-                bytecode[bytecode_length++] = 0xB0;
+                bytecode[bytecode_length++] = 0xd0;
             } else if (strcmp(tok.string_value, "f32_sub") == 0) {
-                bytecode[bytecode_length++] = 0xB1;
+                bytecode[bytecode_length++] = 0xd1;
             } else if (strcmp(tok.string_value, "f32_mul") == 0) {
-                bytecode[bytecode_length++] = 0xB2;
+                bytecode[bytecode_length++] = 0xd2;
             } else if (strcmp(tok.string_value, "f32_div") == 0) {
-                bytecode[bytecode_length++] = 0xB3;
+                bytecode[bytecode_length++] = 0xd3;
             } else if (strcmp(tok.string_value, "f32_pow") == 0) {
-                bytecode[bytecode_length++] = 0xB4;
+                bytecode[bytecode_length++] = 0xd4;
             } else if (strcmp(tok.string_value, "f32_sqrt") == 0) {
-                bytecode[bytecode_length++] = 0xB5;
+                bytecode[bytecode_length++] = 0xd5;
 
             // f16 math
             } else if (strcmp(tok.string_value, "f16_add") == 0) {
-                bytecode[bytecode_length++] = 0xC0;
+                bytecode[bytecode_length++] = 0xe0;
             } else if (strcmp(tok.string_value, "f16_sub") == 0) {
-                bytecode[bytecode_length++] = 0xC1;
+                bytecode[bytecode_length++] = 0xe1;
             } else if (strcmp(tok.string_value, "f16_mul") == 0) {
-                bytecode[bytecode_length++] = 0xC2;
+                bytecode[bytecode_length++] = 0xe2;
             } else if (strcmp(tok.string_value, "f16_div") == 0) {
-                bytecode[bytecode_length++] = 0xC3;
+                bytecode[bytecode_length++] = 0xe3;
             } else if (strcmp(tok.string_value, "f16_pow") == 0) {
-                bytecode[bytecode_length++] = 0xC4;
+                bytecode[bytecode_length++] = 0xe4;
             } else if (strcmp(tok.string_value, "f16_sqrt") == 0) {
-                bytecode[bytecode_length++] = 0xC5;
+                bytecode[bytecode_length++] = 0xe5;
 
             // f8 math
             } else if (strcmp(tok.string_value, "f8_add") == 0) {
-                bytecode[bytecode_length++] = 0xD0;
+                bytecode[bytecode_length++] = 0xf0;
             } else if (strcmp(tok.string_value, "f8_sub") == 0) {
-                bytecode[bytecode_length++] = 0xD1;
+                bytecode[bytecode_length++] = 0xf1;
             } else if (strcmp(tok.string_value, "f8_mul") == 0) {
-                bytecode[bytecode_length++] = 0xD2;
+                bytecode[bytecode_length++] = 0xf2;
             } else if (strcmp(tok.string_value, "f8_div") == 0) {
-                bytecode[bytecode_length++] = 0xD3;
+                bytecode[bytecode_length++] = 0xf3;
             } else if (strcmp(tok.string_value, "f8_pow") == 0) {
-                bytecode[bytecode_length++] = 0xD4;
+                bytecode[bytecode_length++] = 0xf4;
             } else if (strcmp(tok.string_value, "f8_sqrt") == 0) {
-                bytecode[bytecode_length++] = 0xD5;
+                bytecode[bytecode_length++] = 0xf5;
             
             
             } else if (strcmp(tok.string_value, "bytes") == 0) {
@@ -713,7 +790,7 @@ void sias_post_processor(sias_parse_result parse_result) {
 
             if (found_mark != NULL) {
                 tok->type = SIAS_TOKEN_U_INTEGER;
-                tok->uint32_value = found_mark->byte_index;
+                tok->uint64_value = found_mark->byte_index;
             }
         }
     }
@@ -744,7 +821,6 @@ int main(int argc, char* argv[]) {
 
         // printf(COLOR_WHITE COLOR_BG_GREEN COLOR_BOLD " SI ");
         // printf(COLOR_GREEN COLOR_BG_WHITE COLOR_BOLD " AS \n");
-
 
         char logo[] =
             "##########          \n"
