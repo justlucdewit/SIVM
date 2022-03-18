@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 
 #include "../../libraries/color.h"
 
@@ -21,6 +22,7 @@ int sias_str_is_instruction(char* str) {
         strcmp(str, "dup") == 0 ||
         strcmp(str, "rand") == 0 ||
         strcmp(str, "swap") == 0 ||
+        strcmp(str, "cycle") == 0 ||
         strcmp(str, "cycle") == 0 ||
 
         strcmp(str, "cskip") == 0 ||
@@ -212,7 +214,7 @@ typedef struct {
 
    union {
         char* string_value;
-        u_int64_t uint64_value;
+        uint64_t uint64_value;
    };
 } sias_token;
 
@@ -456,7 +458,7 @@ void sias_generate_bytecode(sias_parse_result parse_result, char* file_name) {
                     exit(1);
                 }
 
-                u_int64_t arg1 = tok.uint64_value;
+                uint64_t arg1 = tok.uint64_value;
 
                 bytecode[bytecode_length++] = (char) ((arg1 >> 56) & 0xff);
                 bytecode[bytecode_length++] = (char) ((arg1 >> 48) & 0xff);
@@ -489,7 +491,7 @@ void sias_generate_bytecode(sias_parse_result parse_result, char* file_name) {
                     exit(1);
                 }
 
-                u_int64_t arg1 = tok.uint64_value;
+                uint64_t arg1 = tok.uint64_value;
 
                 bytecode[bytecode_length++] = (char) ((arg1 >> 56) & 0xff);
                 bytecode[bytecode_length++] = (char) ((arg1 >> 48) & 0xff);

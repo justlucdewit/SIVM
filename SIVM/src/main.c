@@ -3,6 +3,7 @@
 #include <string.h>
 #include <time.h>
 #include <sys/types.h>
+#include <stdint.h>
 
 #include "../../libraries/color.h"
 
@@ -10,10 +11,10 @@
 #define SIVM_MEMORY_CAPACITY 255
 #define SIVM_DEBUG 1
 
-typedef u_int8_t u8;
-typedef u_int16_t u16;
-typedef u_int32_t u32;
-typedef u_int64_t u64;
+typedef uint8_t u8;
+typedef uint16_t u16;
+typedef uint32_t u32;
+typedef uint64_t u64;
 
 typedef int8_t i8;
 typedef int16_t i16;
@@ -128,7 +129,7 @@ void sivm_op_rand() {
 void sivm_op_alloc() {
     u64 bytes = sivm_fetch64();
     void* ptr = malloc(sizeof(u8) * bytes);
-    sivm_stack_push((u64) ptr);
+    sivm_stack_push((size_t) ptr);
 }
 
 void sivm_op_ui32_add() {
