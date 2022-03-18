@@ -29,7 +29,7 @@ u8* sivm_memory;
 
 char* sivm_instr_names[] = {
     "syscall", "dynamic_load", "alloc", "free", "realloc", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop",
-    "push", "dup", "rand", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop",
+    "push", "dup", "rand", "swap", "cycle", "pop", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop",
     "cskip", "jump", "call", "return", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop"
 };
 
@@ -115,6 +115,10 @@ void sivm_op_jump() {
 void sivm_op_push() {
     u64 num = sivm_fetch64();
     sivm_stack_push(num);
+}
+
+void sivm_op_pop() {
+    sivm_stack_pop();
 }
 
 void sivm_op_dup() {
@@ -205,6 +209,8 @@ _Noreturn void sivm_run_program() {
             sivm_op_dup();
         else if (opcode == 0x12)
             sivm_op_rand();
+        else if (opcode == 0x15)
+            sivm_op_pop();
 
         // else if (opcode == 0x21)
         //     sivm_op_jump();
@@ -250,7 +256,7 @@ int main(int argc, char* argv[]) {
             }
         }
 
-        printf(COLOR_RED COLOR_BG_RED "");
+        printf(COLOR_NORMAL "");
         puts("");
 
     } else {
