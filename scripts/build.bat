@@ -1,0 +1,1 @@
+cc ..\SIDOC\src\main.c -o ..\output\SIDOC -std=c99
