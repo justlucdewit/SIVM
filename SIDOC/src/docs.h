@@ -146,6 +146,23 @@ SIDOC_Documentation docs[] = {
             "swap\n"
             "// stack is now [38, 21]\n"
     },
+    {
+        .labels = { "cycle", "cycling", "0x14", "14" },
+        .label_count = 4,
+        .content = "cycle is a SIVM assembly instruction corresponding to the opcode 0x14 used for "
+            "manipulating the top values of the stack. When the SIVM encounters the cycle opcode, "
+            "it will take the top 3 values on the stack and rearange them from the order A, B, C to B, C, A."
+            "If this operation gets repeated 3 times, the stack will return to its original form.\n\n"
+
+            "--- Example ---\n"
+            "push 12\n"
+            "push 34\n"
+            "push 56\n"
+            "// stack is now [56, 34, 12]\n\n"
+
+            "cycle\n"
+            "// stack is now [12, 56, 34]\n"
+    },
 
     /*
     // Miscellaneous instructions
