@@ -155,8 +155,15 @@ void sivm_op_alloc() {
 }
 
 void sivm_op_free() {
-    u64 pointer = sivm_stack_pop();
-    free((void*) pointer);
+    u64 ptr = sivm_stack_pop();
+    free((void*) ptr);
+}
+
+void sivm_op_realloc() {
+    u64 number_of_bytes = sivm_stack_pop();
+    u64 ptr = sivm_stack_pop();
+    u64 new_ptr = (u64) realloc((void*) ptr, number_of_bytes);
+    sivm_stack_push((size_t) new_ptr);
 }
 
 void sivm_op_ui32_add() {
@@ -223,12 +230,11 @@ _Noreturn void sivm_run_program() {
         if (SIVM_DEBUG)
             printf("0x%.2X @ 0x%.8lX %s\n", opcode, program_counter, sivm_instr_names[opcode]);
 
-        if (opcode == 0x00)
-            sivm_op_syscall();
-        else if (opcode == 0x02)
-            sivm_op_alloc();
-        else if (opcode == 0x03)
-            sivm_op_free();
+        if (opcode == 0x00) sivm_op_syscall();
+        else if (opcode == 0x02) sivm_op_alloc();
+        else if (opcode == 0x03) sivm_op_free();
+        else if (opcode == 0x04)
+            sivm_op_realloc();
 
         else if (opcode == 0x10)
             sivm_op_push();

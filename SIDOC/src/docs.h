@@ -82,8 +82,8 @@ SIDOC_Documentation docs[] = {
     },
 
     {
-        .labels = { "alloc", "0x02", "02", "allocation" },
-        .label_count = 4,
+        .labels = { "alloc", "0x02", "02", "allocation", "allocating" },
+        .label_count = 5,
         .content =
             "alloc is a SIVM assembly instruction corresponding to the opcode 0x02 used for allocating chunks "
             "of heap memory, which can be manipulated with instructions like write32 or read8. The instruction pops 1 item of "
@@ -116,7 +116,29 @@ SIDOC_Documentation docs[] = {
 
             "; free it again\n"
             "free\n"
-    },  
+    },
+
+    {
+        .labels = { "realloc", "0x04", "04", "reallocation", "reallocating" },
+        .label_count = 5,
+        .content =
+            "realloc is a SIVM assembly instruction corresponding to the opcode 0x04 used for reallocating reserved chunks "
+            "of heap memory. The instruction pops 2 items of the top of the stack both of which are used as arguments for the "
+            "instruction.\n\n"
+
+            "The item that got popped first is used as the new size of the memory buffer, whilst the second popped item is the pointer "
+            "to the memory buffer. The realloc instruction pushes a new pointer to the reallocated memory back onto the stack, or a null pointer "
+            "if something went wrong.\n\n"
+
+            "--- Example ---\n"
+            "; reserve memory\n"
+            "push 1000\n"
+            "alloc\n\n"
+
+            "; grow it to 2000 bytes\n"
+            "push 2000\n"
+            "realloc\n"
+    },
 
     // Stack manipulation instructions
     {
