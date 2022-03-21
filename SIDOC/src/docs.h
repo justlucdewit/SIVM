@@ -71,15 +71,35 @@ SIDOC_Documentation docs[] = {
 
             "--- Example ---\n"
 
-            "// exit code\n"
+            "; exit code\n"
             "push 7\n\n"
 
-            "// SYS_EXIT\n"
+            "; SYS_EXIT\n"
             "push 0\n"
             "syscall\n\n"
-            "// stack is now empty\n"
-            "// program exists with code 7\n"
-    },            
+            "; stack is now empty\n"
+            "; program exists with code 7\n"
+    },
+
+    {
+        .labels = { "alloc", "0x02", "02", "allocation" },
+        .label_count = 4,
+        .content =
+            "alloc is a SIVM assembly instruction corresponding to the opcode 0x02 used for allocating chunks "
+            "of heap memory, which can be manipulated with instructions like write32 or read8. The instruction pops 1 item of "
+            "the stack to use as an argument, which is then used as the amount of bytes to be resereved. "
+            "The pointer to the reserved chunk of memory is pushed to the stack\n\n"
+
+            "If the system could not reserve the needed memory, or another error occured whilst reserving memory, "
+            "it will push a null pointer back onto the stack\n\n"
+
+            "--- Example ---\n"
+            "push 1000\n"
+            "alloc\n"
+            "; we now have 1000 bytes reserved in memory, and a pointer\n"
+            "; to that memory on the stack, we can manipulate this memory with\n"
+            "; operations like write8 and read32"
+    },       
 
     // Stack manipulation instructions
     {
@@ -102,8 +122,9 @@ SIDOC_Documentation docs[] = {
             "\n\n--- Example ---\n"
 
             "push 5\n"
-            "// stack is now [5]\n"
+            "; stack is now [5]\n"
     },
+
     {
         .labels = { "dup", "0x11", "11", "duplicate", "duplication" },
         .label_count = 5,
@@ -117,8 +138,9 @@ SIDOC_Documentation docs[] = {
             "push 5\n"
             "dup\n"
             "u32_add\n"
-            "// stack is now [10]\n"
+            "; stack is now [10]\n"
     },
+
     {
         .labels = { "rand", "0x12", "12", "random" },
         .label_count = 4,
@@ -129,8 +151,9 @@ SIDOC_Documentation docs[] = {
 
             "\n\n--- Example ---\n"
             "rand\n"
-            "// stack is now [<random number>]\n"
+            "; stack is now [<random number>]\n"
     },
+
     {
         .labels = { "swap", "swapping", "0x13", "13" },
         .label_count = 4,
@@ -141,11 +164,12 @@ SIDOC_Documentation docs[] = {
             "--- Example ---\n"
             "push 38\n"
             "push 21\n"
-            "// stack is now [21, 38]\n\n"
+            "; stack is now [21, 38]\n\n"
 
             "swap\n"
-            "// stack is now [38, 21]\n"
+            "; stack is now [38, 21]\n"
     },
+
     {
         .labels = { "cycle", "cycling", "0x14", "14" },
         .label_count = 4,
@@ -158,11 +182,12 @@ SIDOC_Documentation docs[] = {
             "push 12\n"
             "push 34\n"
             "push 56\n"
-            "// stack is now [56, 34, 12]\n\n"
+            "; stack is now [56, 34, 12]\n\n"
 
             "cycle\n"
-            "// stack is now [12, 56, 34]\n"
+            "; stack is now [12, 56, 34]\n"
     },
+
     {
         .labels = { "pop", "popping", "0x15", "15" },
         .label_count = 4,
@@ -173,10 +198,10 @@ SIDOC_Documentation docs[] = {
             "--- Example ---\n"
             "push 12\n"
             "push 34\n"
-            "// stack is now [34, 21]\n\n"
+            "; stack is now [34, 21]\n\n"
 
             "pop\n"
-            "// stack is now [21]\n"
+            "; stack is now [21]\n"
     },
 
     /*

@@ -149,8 +149,8 @@ void sivm_op_rand() {
 }
 
 void sivm_op_alloc() {
-    u64 bytes = sivm_fetch64();
-    void* ptr = malloc(sizeof(u8) * bytes);
+    u64 number_of_bytes = sivm_stack_pop();
+    u64 ptr = (u64) malloc(number_of_bytes);
     sivm_stack_push((size_t) ptr);
 }
 
@@ -220,6 +220,8 @@ _Noreturn void sivm_run_program() {
 
         if (opcode == 0x00)
             sivm_op_syscall();
+        else if (opcode == 0x02)
+            sivm_op_alloc();
 
         else if (opcode == 0x10)
             sivm_op_push();
