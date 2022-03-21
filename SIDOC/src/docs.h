@@ -88,10 +88,10 @@ SIDOC_Documentation docs[] = {
             "alloc is a SIVM assembly instruction corresponding to the opcode 0x02 used for allocating chunks "
             "of heap memory, which can be manipulated with instructions like write32 or read8. The instruction pops 1 item of "
             "the stack to use as an argument, which is then used as the amount of bytes to be resereved. "
-            "The pointer to the reserved chunk of memory is pushed to the stack\n\n"
+            "The pointer to the reserved chunk of memory is pushed to the stack.\n\n"
 
             "If the system could not reserve the needed memory, or another error occured whilst reserving memory, "
-            "it will push a null pointer back onto the stack\n\n"
+            "it will push a null pointer back onto the stack.\n\n"
 
             "--- Example ---\n"
             "push 1000\n"
@@ -99,7 +99,24 @@ SIDOC_Documentation docs[] = {
             "; we now have 1000 bytes reserved in memory, and a pointer\n"
             "; to that memory on the stack, we can manipulate this memory with\n"
             "; operations like write8 and read32"
-    },       
+    },
+
+    {
+        .labels = { "free", "0x03", "03", "freeing" },
+        .label_count = 4,
+        .content =
+            "free is a SIVM assembly instruction corresponding to the opcode 0x03 used for freeing reserved chunks "
+            "of heap memory. The instruction pops 1 item of the top of the stack, and uses that as the pointer to the "
+            "memory that needs to be freed.\n\n"
+
+            "--- Example ---\n"
+            "; reserve memory\n"
+            "push 1000\n"
+            "alloc\n\n"
+
+            "; free it again\n"
+            "free\n"
+    },  
 
     // Stack manipulation instructions
     {

@@ -154,6 +154,11 @@ void sivm_op_alloc() {
     sivm_stack_push((size_t) ptr);
 }
 
+void sivm_op_free() {
+    u64 pointer = sivm_stack_pop();
+    free((void*) pointer);
+}
+
 void sivm_op_ui32_add() {
     u64 a = sivm_stack_pop();
     u64 b = sivm_stack_pop();
@@ -222,6 +227,8 @@ _Noreturn void sivm_run_program() {
             sivm_op_syscall();
         else if (opcode == 0x02)
             sivm_op_alloc();
+        else if (opcode == 0x03)
+            sivm_op_free();
 
         else if (opcode == 0x10)
             sivm_op_push();
