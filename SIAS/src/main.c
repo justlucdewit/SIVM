@@ -244,6 +244,9 @@ sias_parse_result sias_parse_source_code(string_buffer source_code) {
         // Get the current character in the source code
         char current_character = source_code.buffer[reading_index];
 
+        if (current_character == '\r')
+            continue;
+
         // Handle keeping track of current line and column
         ++current_col;
         if (current_character == '\n') {
@@ -401,7 +404,7 @@ sias_parse_result sias_parse_source_code(string_buffer source_code) {
     //         printf(" - VALUE: \"%s\"", tok.string_value);
     //     } else if (tok.type == SIAS_TOKEN_U_INTEGER) {
     //         puts(" - TYPE: Unsigned integer");
-    //         printf(" - VALUE: %d", tok.uint32_value);
+    //         printf(" - VALUE: %d", tok.uint64_value);
     //     } else if (tok.type == SIAS_TOKEN_STRING) {
     //         puts(" - TYPE: String");
     //         printf(" - VALUE: \"%s\"", tok.string_value);
