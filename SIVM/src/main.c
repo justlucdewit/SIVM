@@ -126,6 +126,13 @@ void sivm_op_swap() {
 }
 
 void sivm_op_cycle() {
+    u64 a = sivm_stack_pop();
+    u64 b = sivm_stack_pop();
+    u64 c = sivm_stack_pop();
+
+    sivm_stack_push(b);
+    sivm_stack_push(a);
+    sivm_stack_push(c);
 }
 
 void sivm_op_pop() {
@@ -222,8 +229,11 @@ _Noreturn void sivm_run_program() {
             sivm_op_rand();
         else if (opcode == 0x13)
             sivm_op_swap();
+        else if (opcode == 0x14)
+            sivm_op_cycle();
         else if (opcode == 0x15)
             sivm_op_pop();
+
 
         // else if (opcode == 0x21)
         //     sivm_op_jump();
