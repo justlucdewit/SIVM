@@ -490,6 +490,25 @@ void sias_generate_bytecode(sias_parse_result parse_result, char* file_name) {
             // Controll flow & equality & bitwise
             } else if (strcmp(tok.string_value, "cjump") == 0) {
                 bytecode[bytecode_length++] = 0x20;
+
+                // Handle arguments
+                tok = tokens[++i];
+
+                if (tok.type != SIAS_TOKEN_U_INTEGER) {
+                    printf("[ERROR] Expected integer value after 'push' operation at %s:%ld:%ld\n", file_name, tok.line_found, tok.col_found);
+                    exit(1);
+                }
+
+                uint64_t arg1 = tok.uint64_value;
+
+                bytecode[bytecode_length++] = (char) ((arg1 >> 56) & 0xff);
+                bytecode[bytecode_length++] = (char) ((arg1 >> 48) & 0xff);
+                bytecode[bytecode_length++] = (char) ((arg1 >> 40) & 0xff);
+                bytecode[bytecode_length++] = (char) ((arg1 >> 32) & 0xff);
+                bytecode[bytecode_length++] = (char) ((arg1 >> 24) & 0xff);
+                bytecode[bytecode_length++] = (char) ((arg1 >> 16) & 0xff);
+                bytecode[bytecode_length++] = (char) ((arg1 >> 8) & 0xff);
+                bytecode[bytecode_length++] = (char) arg1;
             } else if (strcmp(tok.string_value, "jump") == 0) {
                 bytecode[bytecode_length++] = 0x21;
 

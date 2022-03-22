@@ -112,6 +112,14 @@ void sivm_op_jump() {
     program_counter = num - 1;
 }
 
+void sivm_op_conditional_jump() {
+    u64 num = sivm_fetch64();
+    u64 condition_result = sivm_stack_pop();
+
+    if (condition_result)
+        program_counter = num - 1;
+}
+
 void sivm_op_push() {
     u64 num = sivm_fetch64();
     sivm_stack_push(num);
@@ -245,6 +253,7 @@ _Noreturn void sivm_run_program() {
         else if (opcode == 0x15) sivm_op_pop();
 
         // Control-flow operations
+        else if (opcode == 0x20) sivm_op_conditional_jump();
         else if (opcode == 0x21) sivm_op_jump();
 
         
