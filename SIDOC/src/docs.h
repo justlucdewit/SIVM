@@ -244,14 +244,53 @@ SIDOC_Documentation docs[] = {
     },
 
     {
+        .labels = { "cjump", "conditional jump", "conditional jumping", "jumping", "0x20", "20" },
+        .label_count = 6,
+        .content = "cjump is a SIVM assembly instruction corresponding to the opcode 0x20 used for "
+            "making the control flow of the program jump to another place of the program. depending on a condition. "
+            "this can be used to create if statements or loops.\n\n"
+            
+            "The instruction takes 1 argument which is the address to jump to in the program. In SI-Assembly "
+            "this is usually represented as a label. It also pops a value of the stack which it uses as the condition result. "
+            "If this value is 0, it will not jump, if this value is > 0, it will jump\n\n"
+
+            "--- Usage ---\n"
+            "cjump <label>\n\n"
+
+            "--- Example ---\n"
+            "; this jump will happen\n"
+            "push 3\n"
+            "cjump label1\n\n"
+
+            "; this jump wont happen\n"
+            "push 0\n"
+            "cjump label2\n\n"
+            
+            "; return exit code 0\n"
+            "ending:\n"
+            "push 0\n"
+            "push 1\n"
+            "syscall\n"
+            "; stack is now [1]\n\n"
+
+            "; this subroutine will be called\n"
+            "label1:\n"
+            "   push 1\n\n"
+
+            "; this subroutine wont be called\n"
+            "label2:\n"
+            "   push 2\n\n"
+    },
+
+    {
         .labels = { "jump", "jumping", "0x21", "21" },
         .label_count = 4,
         .content = "jump is a SIVM assembly instruction corresponding to the opcode 0x21 used for "
             "making the control flow of the program jump to another place of the program. This can "
-            "be used to create if statements or loops.\n\n"
+            "be used to create subroutines.\n\n"
             
-            "The instruction pops 1 argument off the stack to be used as the address to jump to. "
-            "In the assembly code, this address is usually in the form of a label.\n\n"
+            "The instruction takes 1 argument which is the address to jump to in the program. In SI-Assembly "
+            "this is usually represented as a label.\n\n"
 
             "--- Example ---\n"
             "jump label2\n\n"
