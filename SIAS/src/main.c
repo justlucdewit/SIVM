@@ -25,7 +25,7 @@ int sias_str_is_instruction(char* str) {
         strcmp(str, "cycle") == 0 ||
         strcmp(str, "pop") == 0 ||
 
-        strcmp(str, "cskip") == 0 ||
+        strcmp(str, "cjump") == 0 ||
         strcmp(str, "jump") == 0 ||
         strcmp(str, "call") == 0 ||
         strcmp(str, "return") == 0 ||
@@ -488,7 +488,7 @@ void sias_generate_bytecode(sias_parse_result parse_result, char* file_name) {
                 bytecode[bytecode_length++] = 0x15;
 
             // Controll flow & equality & bitwise
-            } else if (strcmp(tok.string_value, "cskip") == 0) {
+            } else if (strcmp(tok.string_value, "cjump") == 0) {
                 bytecode[bytecode_length++] = 0x20;
             } else if (strcmp(tok.string_value, "jump") == 0) {
                 bytecode[bytecode_length++] = 0x21;

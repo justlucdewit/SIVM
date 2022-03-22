@@ -243,6 +243,30 @@ SIDOC_Documentation docs[] = {
             "; stack is now [21]\n"
     },
 
+    {
+        .labels = { "jump", "jumping", "0x21", "21" },
+        .label_count = 4,
+        .content = "jump is a SIVM assembly instruction corresponding to the opcode 0x21 used for "
+            "making the control flow of the program jump to another place of the program. This can "
+            "be used to create if statements or loops.\n\n"
+            
+            "The instruction pops 1 argument off the stack to be used as the address to jump to. "
+            "In the assembly code, this address is usually in the form of a label.\n\n"
+
+            "--- Example ---\n"
+            "jump label2\n\n"
+
+            "; this bit will be skipped\n"
+            "label1:\n"
+            "   push 1\n\n"
+
+            "; this bit will be ran\n"
+            "label2:\n"
+            "   push 2\n\n"
+            
+            "; stack is now [2]\n"
+    },
+
     /*
     // Miscellaneous instructions
     {
