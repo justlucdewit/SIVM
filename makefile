@@ -23,4 +23,4 @@ sidoc:
 	$(cc) $(doc_sources) -o builds/sidoc
 
 cloc:
-	cloc .
+	cloc . --force-lang=c,h
