@@ -41,6 +41,11 @@ int sias_str_is_instruction(char* str) {
         strcmp(str, "free") == 0 ||
         strcmp(str, "realloc") == 0 ||
 
+        strcmp(str, "eq") == 0 ||
+        strcmp(str, "neq") == 0 ||
+        strcmp(str, "less") == 0 ||
+        strcmp(str, "more") == 0 ||
+
         strcmp(str, "u64_add") == 0 ||
         strcmp(str, "u64_sub") == 0 ||
         strcmp(str, "u64_mul") == 0 ||
@@ -482,7 +487,7 @@ void sias_generate_bytecode(sias_parse_result parse_result, char* file_name) {
             } else if (strcmp(tok.string_value, "pop") == 0) {
                 bytecode[bytecode_length++] = 0x15;
 
-            // Controll flow
+            // Controll flow & equality & bitwise
             } else if (strcmp(tok.string_value, "cskip") == 0) {
                 bytecode[bytecode_length++] = 0x20;
             } else if (strcmp(tok.string_value, "jump") == 0) {
@@ -511,6 +516,23 @@ void sias_generate_bytecode(sias_parse_result parse_result, char* file_name) {
             } else if (strcmp(tok.string_value, "return") == 0) {
                 bytecode[bytecode_length++] = 0x23;
 
+            } else if (strcmp(tok.string_value, "eq") == 0) {
+                bytecode[bytecode_length++] = 0x24;
+            } else if (strcmp(tok.string_value, "neq") == 0) {
+                bytecode[bytecode_length++] = 0x25;
+            } else if (strcmp(tok.string_value, "less") == 0) {
+                bytecode[bytecode_length++] = 0x26;
+            } else if (strcmp(tok.string_value, "more") == 0) {
+                bytecode[bytecode_length++] = 0x27;
+            } else if (strcmp(tok.string_value, "and") == 0) {
+                bytecode[bytecode_length++] = 0x28;
+            } else if (strcmp(tok.string_value, "or") == 0) {
+                bytecode[bytecode_length++] = 0x29;
+            } else if (strcmp(tok.string_value, "xor") == 0) {
+                bytecode[bytecode_length++] = 0x2a;
+            } else if (strcmp(tok.string_value, "nor") == 0) {
+                bytecode[bytecode_length++] = 0x2b;
+
             // Heap memory read/write
             } else if (strcmp(tok.string_value, "write8") == 0) {
                 bytecode[bytecode_length++] = 0x30;
@@ -524,8 +546,6 @@ void sias_generate_bytecode(sias_parse_result parse_result, char* file_name) {
                 bytecode[bytecode_length++] = 0x34;
             } else if (strcmp(tok.string_value, "read32") == 0) {
                 bytecode[bytecode_length++] = 0x35;
-
-            
 
             // ui64 math
             } else if (strcmp(tok.string_value, "u64_add") == 0) {
@@ -754,7 +774,7 @@ void sias_post_processor(sias_parse_result parse_result) {
         } else if (tok.type == SIAS_TOKEN_STRING) {
             current_byte_index += strlen(tok.string_value);
         } else if (tok.type == SIAS_TOKEN_U_INTEGER) {
-            current_byte_index += 4;
+            current_byte_index += 8;
         } else if (tok.type == SIAS_TOKEN_MARKER) {
             if (tok.string_value[strlen(tok.string_value) - 1] == ':') {
                 tok.type = SIAS_TOKEN_MARKER;
@@ -767,7 +787,7 @@ void sias_post_processor(sias_parse_result parse_result) {
 
                 markers[marker_count++] = new_maker;
             } else {
-                current_byte_index += 4;
+                current_byte_index += 8;
             }
         }
     }

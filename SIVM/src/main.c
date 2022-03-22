@@ -9,7 +9,7 @@
 
 #define SIVM_STACK_CAPACITY 255
 #define SIVM_MEMORY_CAPACITY 255
-#define SIVM_DEBUG 1
+#define SIVM_DEBUG 0
 
 typedef uint8_t u8;
 typedef uint16_t u16;
@@ -230,38 +230,23 @@ _Noreturn void sivm_run_program() {
         if (SIVM_DEBUG)
             printf("0x%.2X @ 0x%.8lX %s\n", opcode, program_counter, sivm_instr_names[opcode]);
 
+        // Miscelaneous operations
         if (opcode == 0x00) sivm_op_syscall();
         else if (opcode == 0x02) sivm_op_alloc();
         else if (opcode == 0x03) sivm_op_free();
-        else if (opcode == 0x04)
-            sivm_op_realloc();
+        else if (opcode == 0x04) sivm_op_realloc();
+        
+        // Stack operations
+        else if (opcode == 0x10) sivm_op_push();
+        else if (opcode == 0x11) sivm_op_dup();
+        else if (opcode == 0x12) sivm_op_rand();
+        else if (opcode == 0x13) sivm_op_swap();
+        else if (opcode == 0x14) sivm_op_cycle();
+        else if (opcode == 0x15) sivm_op_pop();
 
-        else if (opcode == 0x10)
-            sivm_op_push();
-        else if (opcode == 0x11)
-            sivm_op_dup();
-        else if (opcode == 0x12)
-            sivm_op_rand();
-        else if (opcode == 0x13)
-            sivm_op_swap();
-        else if (opcode == 0x14)
-            sivm_op_cycle();
-        else if (opcode == 0x15)
-            sivm_op_pop();
+        // Control-flow operations
+        else if (opcode == 0x21) sivm_op_jump();
 
-
-        // else if (opcode == 0x21)
-        //     sivm_op_jump();
-        // else if (opcode == 0x40)
-        //     sivm_op_alloc();
-        // else if (opcode == 0x50)
-        //     sivm_op_ui32_add();
-        // else if (opcode == 0x51)
-        //     sivm_op_ui32_sub();
-        // else if (opcode == 0x52)
-        //     sivm_op_ui32_div();
-        // else if (opcode == 0x53)
-        //     sivm_op_ui32_mul();
         
         else
             printf("unknown opcode (0x%.2X)\n", opcode);
