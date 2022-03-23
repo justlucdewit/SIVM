@@ -8,8 +8,9 @@
 #include "../../libraries/color.h"
 
 #define SIVM_STACK_CAPACITY 255
+#define SIVM_CALLSTACK_CAPACITY 255
 #define SIVM_MEMORY_CAPACITY 255
-#define SIVM_DEBUG 0
+#define SIVM_DEBUG 1
 
 typedef uint8_t u8;
 typedef uint16_t u16;
@@ -22,7 +23,9 @@ typedef int32_t i32;
 typedef int64_t i64;
 
 u64* sivm_stack;
+u64* sivm_callstack;
 u64 sivm_stack_pointer = 0;
+u64 sivm_callstack_pointer = 0;
 u64 program_counter = 0;
 
 u8* sivm_memory;
@@ -68,10 +71,21 @@ void sivm_stack_push(u64 number) {
     ++sivm_stack_pointer;
 }
 
+void sivm_callstack_push(u64 address) {
+    sivm_callstack[sivm_callstack_pointer] = address;
+    ++sivm_callstack_pointer;
+}
+
 u64 sivm_stack_pop() {
    --sivm_stack_pointer;
    u64 ret = sivm_stack[sivm_stack_pointer];
    return ret;
+}
+
+u64 sivm_callstack_pop() {
+   --sivm_callstack_pointer;
+   u64 address = sivm_callstack[sivm_callstack_pointer];
+   return address;
 }
 
 void sivm_sys_write() {
@@ -118,6 +132,17 @@ void sivm_op_conditional_jump() {
 
     if (condition_result)
         program_counter = num - 1;
+}
+
+void sivm_op_call() {
+    u64 call_address = sivm_fetch64();
+    sivm_callstack_push(program_counter);
+    program_counter = call_address - 1;
+}
+
+void sivm_op_return() {
+    u64 return_address = sivm_callstack_pop();
+    program_counter = return_address;
 }
 
 void sivm_op_push() {
@@ -200,6 +225,7 @@ void sivm_op_ui32_div() {
 
 void sivm_init() {
     sivm_stack = malloc(sizeof(u64) * SIVM_STACK_CAPACITY);
+    sivm_callstack = malloc(sizeof(u64) * SIVM_CALLSTACK_CAPACITY);
     sivm_memory = malloc(sizeof(u8) * SIVM_MEMORY_CAPACITY);
 }
 
@@ -255,7 +281,8 @@ _Noreturn void sivm_run_program() {
         // Control-flow operations
         else if (opcode == 0x20) sivm_op_conditional_jump();
         else if (opcode == 0x21) sivm_op_jump();
-
+        else if (opcode == 0x22) sivm_op_call();
+        else if (opcode == 0x23) sivm_op_return();
         
         else
             printf("unknown opcode (0x%.2X)\n", opcode);
