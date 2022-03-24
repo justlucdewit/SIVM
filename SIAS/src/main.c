@@ -209,7 +209,8 @@ typedef enum {
     SIAS_TOKEN_INSTRUCTION,
     SIAS_TOKEN_U_INTEGER,
     SIAS_TOKEN_STRING,
-    SIAS_TOKEN_MARKER
+    SIAS_TOKEN_MARKER,
+    SIAS_TOKEN_KEYWORD
 } sias_token_type;
 
 typedef struct {
@@ -394,32 +395,32 @@ sias_parse_result sias_parse_source_code(string_buffer source_code) {
     }
 
    // Print how many tokens got parsed
-   // printf("Tokens parsed: %ld\n\n", token_count);
+//    printf("Tokens parsed: %ld\n\n", token_length);
 
-    // for (int i = 0; i < token_length; i++) {
-    //     sias_token tok = tokens[i];
+//     for (int i = 0; i < token_length; i++) {
+//         sias_token tok = tokens[i];
 
-    //     printf("Token %d\n", i);
+//         printf("Token %d\n", i);
 
-    //     if (tok.type == SIAS_TOKEN_INSTRUCTION) {
-    //         puts(" - TYPE: Instruction");
-    //         printf(" - VALUE: %s", tok.string_value);
-    //     } else if (tok.type == SIAS_TOKEN_MARKER) {
-    //         puts(" - TYPE: Marker");
-    //         printf(" - VALUE: \"%s\"", tok.string_value);
-    //     } else if (tok.type == SIAS_TOKEN_U_INTEGER) {
-    //         puts(" - TYPE: Unsigned integer");
-    //         printf(" - VALUE: %d", tok.uint64_value);
-    //     } else if (tok.type == SIAS_TOKEN_STRING) {
-    //         puts(" - TYPE: String");
-    //         printf(" - VALUE: \"%s\"", tok.string_value);
-    //     } else { 
-    //         puts(" - TYPE: Unkown");
-    //         puts(" - VALUE: Unknown");
-    //     }
+//         if (tok.type == SIAS_TOKEN_INSTRUCTION) {
+//             puts(" - TYPE: Instruction");
+//             printf(" - VALUE: %s", tok.string_value);
+//         } else if (tok.type == SIAS_TOKEN_MARKER) {
+//             puts(" - TYPE: Marker");
+//             printf(" - VALUE: \"%s\"", tok.string_value);
+//         } else if (tok.type == SIAS_TOKEN_U_INTEGER) {
+//             puts(" - TYPE: Unsigned integer");
+//             printf(" - VALUE: %ld", tok.uint64_value);
+//         } else if (tok.type == SIAS_TOKEN_STRING) {
+//             puts(" - TYPE: String");
+//             printf(" - VALUE: \"%s\"", tok.string_value);
+//         } else { 
+//             puts(" - TYPE: Unkown");
+//             puts(" - VALUE: Unknown");
+//         }
 
-    //     puts("\n");
-    // }
+//         puts("\n");
+//     }
 
     // Create and return the parse result
     sias_parse_result result = {
@@ -438,8 +439,35 @@ void sias_generate_bytecode(sias_parse_result parse_result, char* file_name) {
     sias_token* tokens = parse_result.tokens;
     size_t tokens_count = parse_result.token_count;
 
+    // for (int i = 0; i < tokens_count; i++) {
+    //     sias_token tok = tokens[i];
+
+    //     printf("Token %d\n", i);
+
+    //     if (tok.type == SIAS_TOKEN_INSTRUCTION) {
+    //         puts(" - TYPE: Instruction");
+    //         printf(" - VALUE: %s", tok.string_value);
+    //     } else if (tok.type == SIAS_TOKEN_MARKER) {
+    //         puts(" - TYPE: Marker");
+    //         printf(" - VALUE: \"%s\"", tok.string_value);
+    //     } else if (tok.type == SIAS_TOKEN_U_INTEGER) {
+    //         puts(" - TYPE: Unsigned integer");
+    //         printf(" - VALUE: %ld", tok.uint64_value);
+    //     } else if (tok.type == SIAS_TOKEN_STRING) {
+    //         puts(" - TYPE: String");
+    //         printf(" - VALUE: \"%s\"", tok.string_value);
+    //     } else { 
+    //         puts(" - TYPE: Unkown");
+    //         puts(" - VALUE: Unknown");
+    //     }
+
+    //     puts("\n");
+    // }
+
     for (int i = 0; i < tokens_count; i++) {
         sias_token tok = tokens[i];
+
+        printf("now at type %d", tok.type);
 
         if (tok.type == SIAS_TOKEN_INSTRUCTION) {
             // Miscelaneous
@@ -456,6 +484,7 @@ void sias_generate_bytecode(sias_parse_result parse_result, char* file_name) {
             
             // Stack
             } else if (strcmp(tok.string_value, "push") == 0) {
+                puts("test");
                 bytecode[bytecode_length++] = 0x10;
 
                 // Handle arguments
@@ -781,6 +810,24 @@ void sias_generate_bytecode(sias_parse_result parse_result, char* file_name) {
                 printf("[ERROR] Unknown instruction at %s:%ld:%ld '%s'\n", file_name, tok.line_found, tok.col_found, tok.string_value);
                 exit(1);
             }
+        } else if (tok.type == SIAS_TOKEN_KEYWORD) {
+            puts("KEYWORD");
+        } else {
+            char* tt_str = NULL;
+
+            if (tok.type == SIAS_TOKEN_INSTRUCTION)
+                tt_str = "Instruction";
+            else if (tok.type == SIAS_TOKEN_KEYWORD)
+                tt_str = "Keyword";
+            else if (tok.type == SIAS_TOKEN_MARKER)
+                tt_str = "Marker";
+            else if (tok.type == SIAS_TOKEN_STRING)
+                tt_str = "String";
+            else if (tok.type == SIAS_TOKEN_U_INTEGER)
+                tt_str = "Int";
+
+            printf("[ERROR] Unexpected token of type %s\n%ld", tt_str, tok.uint64_value);
+            exit(1);
         }
     }
 
@@ -816,7 +863,6 @@ void sias_post_processor(sias_parse_result parse_result) {
         } else if (tok.type == SIAS_TOKEN_MARKER) {
             if (tok.string_value[strlen(tok.string_value) - 1] == ':') {
                 tok.type = SIAS_TOKEN_MARKER;
-                tok.string_value[strlen(tok.string_value) - 1] = '\0';
 
                 marker_position new_maker = {
                     .marker_name = tok.string_value,
@@ -839,7 +885,7 @@ void sias_post_processor(sias_parse_result parse_result) {
     // Loop over tokens to replace markers
     for (size_t i = 0; i < tokens_count; i++) {
         sias_token* tok = tokens + i;
-
+        
         if (tok->type == SIAS_TOKEN_MARKER && tok->string_value[strlen(tok->string_value) - 1] != ':') {
 
             // Try to find marker

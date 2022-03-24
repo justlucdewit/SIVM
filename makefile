@@ -23,4 +23,9 @@ sidoc:
 	$(cc) $(doc_sources) -o builds/sidoc
 
 cloc:
-	cloc . --force-lang=c,h
+	onefetch
+
+tst: all
+	sias test/test.asm
+	# mv output test/output
+	# sivm test/output
