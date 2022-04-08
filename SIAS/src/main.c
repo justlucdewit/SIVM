@@ -14,7 +14,9 @@ typedef struct {
 } string_buffer;
 
 int sias_str_is_keyword(char* str) {
-    return strcmp(str, "%bytes") == 0;
+    return
+        strcmp(str, "%bytes") == 0 || 
+        strcmp(str, "%const") == 0;
 }
 
 int sias_str_is_instruction(char* str) {
