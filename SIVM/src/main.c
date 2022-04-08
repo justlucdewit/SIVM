@@ -10,7 +10,7 @@
 #define SIVM_STACK_CAPACITY 255
 #define SIVM_CALLSTACK_CAPACITY 255
 #define SIVM_MEMORY_CAPACITY 255
-#define SIVM_DEBUG 1
+#define SIVM_DEBUG 0
 
 typedef uint8_t u8;
 typedef uint16_t u16;

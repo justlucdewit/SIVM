@@ -13,6 +13,10 @@ typedef struct {
 	size_t length;
 } string_buffer;
 
+int sias_str_is_keyword(char* str) {
+    return strcmp(str, "%bytes") == 0;
+}
+
 int sias_str_is_instruction(char* str) {
     return
         strcmp(str, "syscall") == 0 ||
@@ -367,8 +371,6 @@ sias_parse_result sias_parse_source_code(string_buffer source_code) {
         acc[acc_length++] = current_character;
     }
 
-    
-
     // Check if there is a token left in the temp buffer
     if (acc_length > 0) {
         sias_token tok = {
@@ -466,8 +468,6 @@ void sias_generate_bytecode(sias_parse_result parse_result, char* file_name) {
 
     for (int i = 0; i < tokens_count; i++) {
         sias_token tok = tokens[i];
-
-        printf("%i\n", i);
 
         if (tok.type == SIAS_TOKEN_INSTRUCTION) {
             // Miscelaneous
@@ -795,22 +795,22 @@ void sias_generate_bytecode(sias_parse_result parse_result, char* file_name) {
             } else if (strcmp(tok.string_value, "f8_pow") == 0) {
                 bytecode[bytecode_length++] = 0xf4;
             } else if (strcmp(tok.string_value, "f8_sqrt") == 0) {
-                bytecode[bytecode_length++] = 0xf5;
-            
-            
-            } else if (strcmp(tok.string_value, "bytes") == 0) {
-                tok = tokens[++i];
-                char* arg1 = tok.string_value;
-
-                size_t i = 0;
-                while (*(arg1 + i) != '\0')
-                    bytecode[bytecode_length++] = *(arg1 + i++);
+                bytecode[bytecode_length++] = 0xf5;                
             } else {
                 printf("[ERROR] Unknown instruction at %s:%ld:%ld '%s'\n", file_name, tok.line_found, tok.col_found, tok.string_value);
                 exit(1);
             }
-        } else if (tok.type == SIAS_TOKEN_KEYWORD) {
-            puts("KEYWORD");
+        } else if (tok.type == SIAS_TOKEN_MARKER) {
+            if (sias_str_is_keyword(tok.string_value)) {
+                if (strcmp(tok.string_value, "%bytes") == 0) {
+                    tok = tokens[++i];
+                    char* arg1 = tok.string_value;
+
+                    size_t i = 0;
+                    while (*(arg1 + i) != '\0')
+                        bytecode[bytecode_length++] = *(arg1 + i++);
+                }
+            }
         } else {
             char* tt_str = NULL;
 
@@ -825,7 +825,7 @@ void sias_generate_bytecode(sias_parse_result parse_result, char* file_name) {
             else if (tok.type == SIAS_TOKEN_U_INTEGER)
                 tt_str = "Int";
 
-            printf("[ERROR] Unexpected token of type %s\n", tt_str);
+            printf("[ERROR] Unexpected token of type %s at index %d\n", tt_str, i);
             exit(1);
         }
     }
@@ -860,16 +860,15 @@ void sias_post_processor(sias_parse_result parse_result) {
         } else if (tok.type == SIAS_TOKEN_U_INTEGER) {
             current_byte_index += 8;
         } else if (tok.type == SIAS_TOKEN_MARKER) {
+            printf("test: %c\n", tok.string_value[0]);
             if (tok.string_value[strlen(tok.string_value) - 1] == ':') {
-                tok.type = SIAS_TOKEN_MARKER;
-                int str_size = sizeof(tok.string_value);
+                int str_size = strlen(tok.string_value);
 
-                tok.string_value = realloc(tok.string_value, sizeof(tok.string_value) + 1);
-
-                tok.string_value[str_size] = '\0';
+                char* marker_name = malloc(sizeof(char) * str_size);
+                memcpy(marker_name, tok.string_value, str_size - 1);
 
                 marker_position new_maker = {
-                    .marker_name = tok.string_value,
+                    .marker_name = marker_name,
                     .byte_index = current_byte_index
                 };
 
@@ -881,10 +880,10 @@ void sias_post_processor(sias_parse_result parse_result) {
     }
 
     // Loop over markers
-    // for (size_t i = 0; i < marker_count; i++) {
-    //     marker_position mark = markers[i];
-    //     printf("marker '%s' at byte index 0x%.2X\n", mark.marker_name, mark.byte_index);
-    // }
+    for (size_t i = 0; i < marker_count; i++) {
+        marker_position mark = markers[i];
+        printf("marker '%s' at byte index 0x%.2X\n", mark.marker_name, mark.byte_index);
+    }
 
     // Loop over tokens to replace markers
     for (size_t i = 0; i < tokens_count; i++) {
@@ -909,6 +908,14 @@ void sias_post_processor(sias_parse_result parse_result) {
             }
         }
     }
+
+    // loop over all the markers to free it and its string value
+    for (size_t i = 0; i < marker_count; i++) {
+        marker_position* mark = &markers[i];
+        free(mark->marker_name);
+    }
+
+    free(markers);
 }
 
 void sias_assembler(char argc, char* argv[]) {
